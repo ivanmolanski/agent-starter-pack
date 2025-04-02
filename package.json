@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@google-cloud/access-context-manager": "^4.0.1",
+    "@google-cloud/dns": "^5.1.0",
+    "@google-cloud/domains": "^4.0.1",
+    "@google-cloud/iam-credentials": "^4.0.1",
+    "@google-cloud/network-connectivity": "^4.0.1",
+    "@google-cloud/network-management": "^4.0.1",
+    "@google-cloud/profiler": "^6.0.2",
+    "@google-cloud/workflows": "^4.1.0"
+  }
+}
