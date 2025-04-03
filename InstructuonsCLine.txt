@@ -1,0 +1,1220 @@
+Perform this setup using the instructions below.  I don't have anything to deploy, but I want to create the envirnment to be ready for when I do.  Query me for any questions or information you may need along the way.  
+
+---
+
+ID's
+
+Project info
+Project name
+Gemini API
+Project number
+812892123944
+Project ID
+gen-lang-client-0926890286
+
+Github PAT
+
+-----
+
+Instructions 
+
+## ⚙️ CI/CD Setup (Experimental)
+
+This starter pack provides an *experimental* command to automate the setup of a basic CI/CD pipeline. This pipeline connects your agent to a GitHub repository and uses Google Cloud Build for automated testing and deployment.
+
+**⚠️ Important Notes:**
+
+*   **Experimental Feature:** The `setup-cicd` command is under active development. Expect potential changes and report any issues you encounter.
+*   **Production Readiness:** For production deployments, we *strongly* recommend following the manual setup instructions in the `deployment/README.md` file. The manual approach provides greater control over security, customization, and environment-specific configurations. This automated setup is primarily intended for development and testing purposes.
+*   **Git Provider:** Currently, only GitHub is supported. Support for other Git providers may be added in the future.
+
+### Quick CI/CD Setup (Automated)
+
+This command streamlines the CI/CD setup process. It handles:
+
+1.  **GitHub Repository:** Creates a new GitHub repository or connects to an existing one (prompts for confirmation if the existing repository is not empty).
+2.  **Cloud Build Connection:** Establishes a connection between your GitHub repository and Google Cloud Build.
+3.  **Development Environment:** Sets up the infrastructure for your development environment using Terraform (optional, requires `--dev-project`).
+4.  **CI/CD Triggers:** Configures basic Cloud Build triggers for pull request checks and deployments.
+5.  **Terraform State:** By default, configures remote Terraform state management using a Google Cloud Storage (GCS) bucket. You can opt for local state management using `--local-state`.
+
+**Prerequisites:**
+
+*   Run this command from the root directory of your `agent-starter-pack` project (the directory containing `pyproject.toml`).
+*   Install the `gh` CLI and authenticate with GitHub (`gh auth login`).
+*   Authenticate with Google Cloud (`gcloud auth application-default login`).
+*   Install Terraform.
+
+**Command Usage:**
+```bash
+agent-starter-pack setup-cicd \
+    --staging-project <YOUR_STAGING_PROJECT_ID> \
+    --prod-project <YOUR_PROD_PROJECT_ID> \
+    --cicd-project <YOUR_CICD_PROJECT_ID> \
+    [--dev-project <YOUR_DEV_PROJECT_ID>] \
+    [--region <GCP_REGION>] \
+    [--repository-name <GITHUB_REPO_NAME>] \
+    [--repository-owner <GITHUB_USERNAME_OR_ORG>] \
+    [--host-connection-name <CONNECTION_NAME>] \
+    [--github-pat <YOUR_GITHUB_PAT>] \
+    [--github-app-installation-id <YOUR_GITHUB_APP_INSTALLATION_ID>] \
+    [--local-state] \
+    [--debug] \
+    [--auto-approve]
+```
+
+**Options:**
+
+*   `--staging-project`: **Required.** The Google Cloud project ID for your staging environment.
+*   `--prod-project`: **Required.** The Google Cloud project ID for your production environment.
+*   `--cicd-project`: **Required.** The Google Cloud project ID where your CI/CD resources (Cloud Build, Secret Manager, etc.) will reside. This can be the same as your staging or production project.
+*   `--dev-project`: (Optional) The Google Cloud project ID for your development environment. If provided, the setup will also configure a development environment via Terraform.
+*   `--region`: The GCP region to use for resources (default: `us-central1`).
+*   `--repository-name`: (Optional) The name for the GitHub repository. If omitted in interactive mode, you will be prompted, or a name will be generated (e.g., `genai-app-1678886400`). Required in programmatic mode if the repository doesn't exist.
+*   `--repository-owner`: (Optional) Your GitHub username or organization name where the repository resides or will be created. If omitted in interactive mode, it defaults to your authenticated GitHub user, and you will be prompted. Required in programmatic mode if the repository doesn't exist.
+*   `--host-connection-name`: (Optional) The name for the Cloud Build connection to GitHub (default: `github-connection`).
+*   `--github-pat`: (Optional) Your GitHub Personal Access Token (PAT) with repository access. Required for programmatic mode. If provided, you must also provide `--github-app-installation-id`.
+*   `--github-app-installation-id`: (Optional) The installation ID of the Google Cloud Build GitHub App on your repository. Required if using `--github-pat` (programmatic mode).
+*   `--local-state`: Use local Terraform state instead of a remote GCS bucket. This is generally *not* recommended for collaborative projects or production environments.
+*   `--debug`: Enable debug logging for more verbose output.
+*   `--auto-approve`: Skip interactive confirmation prompts (e.g., for using a non-empty repository). Use with caution!
+
+**Project Requirements:**
+
+You need at least *two* Google Cloud projects: one for staging and one for production. The CI/CD project can be the same as either the staging or production project, or a separate third project. A separate development project is optional but recommended for isolating development infrastructure.
+
+**Interactive Mode vs. Programmatic Mode:**
+
+The command operates in two modes:
+
+*   **Interactive Mode (Default):** If you *don't* provide `--github-pat` and `--github-app-installation-id`, the command runs interactively. It will:
+    *   Prompt you to choose between creating a new repository or using an existing one.
+    *   Prompt for repository details (name, owner) if not provided via flags.
+    *   Guide you through authenticating with GitHub via OAuth to create the Cloud Build connection.
+    *   Create the GitHub repository if requested.
+*   **Programmatic Mode:** If you provide *both* `--github-pat` and `--github-app-installation-id`, the command runs non-interactively using these credentials. This is suitable for automation scripts.
+    *   It assumes the GitHub repository and the Cloud Build GitHub App installation already exist.
+    *   It will create/update a secret in Google Cloud Secret Manager (`github-pat` in the CICD project) to store the provided PAT.
+
+**Authentication:**
+
+*   **Interactive Mode:** Uses OAuth for the Cloud Build connection to GitHub. You'll be prompted in your browser to authorize the Google Cloud Build application. Requires `gh` CLI authentication.
+*   **Programmatic Mode:** Uses the provided GitHub Personal Access Token (PAT) and GitHub App installation ID. The PAT is stored securely in Google Cloud Secret Manager.
+
+**Steps Performed (High-Level):**
+
+1.  **Validation & Setup:**
+    *   Validates that the command is run from the project root.
+    *   Prompts for Git provider (currently only GitHub).
+    *   Handles GitHub authentication (`gh auth login` check).
+    *   Ensures required Google Cloud APIs (e.g., `secretmanager.googleapis.com`, `cloudbuild.googleapis.com`, `cloudresourcemanager.googleapis.com`) are enabled in the relevant projects.
+2.  **Repository & Connection Setup (Mode Dependent):**
+    *   **Interactive:** Prompts for repository details, creates the GitHub repository (if requested), and creates the Cloud Build connection via OAuth flow.
+    *   **Programmatic:** Creates/updates the GitHub PAT secret in Secret Manager. Assumes repository and connection pre-exist configuration-wise but Terraform will manage them.
+3.  **Terraform Configuration:**
+    *   Copies necessary Terraform files (`cloudbuild_cicd.tf`, `github_repo.tf`, etc.) into `deployment/terraform/`.
+    *   Sets up the Terraform backend configuration (`backend.tf`) in `deployment/terraform/` and `deployment/terraform/dev/` to use a GCS bucket (unless `--local-state` is used). The bucket name will be `<CICD_PROJECT_ID>-terraform-state`.
+    *   Updates `deployment/terraform/vars/env.tfvars` with project IDs, region, repository details (`repository_name`, `repository_owner`), connection details (`host_connection_name`), and authentication/mode flags (`github_pat_secret_id`, `github_app_installation_id`, `connection_exists`, `repository_exists`).
+    *   Updates `deployment/terraform/dev/vars/env.tfvars` with the development project ID (if provided).
+    *   Updates `deployment/terraform/build_triggers.tf` to correctly reference the Terraform-managed GitHub repository resource.
+4.  **Terraform Apply:**
+    *   Runs `terraform init` and `terraform apply` for the development environment (`deployment/terraform/dev/`) if `--dev-project` was provided.
+    *   Runs `terraform init` and `terraform apply` for the main CI/CD and prod/staging configuration (`deployment/terraform/`). This step creates/manages the GitHub repository (if not existing), Cloud Build connection, triggers, IAM bindings, and potentially other resources defined in the Terraform files.
+5.  **Git Setup:**
+    *   Initializes a Git repository (`git init -b main`) in the current directory if one doesn't exist.
+    *   Adds a Git remote named `origin` pointing to the configured GitHub repository URL if the remote doesn't already exist.
+
+**After Running the Command:**
+
+*   **Commit and Push:** You *must* commit your project files and push them to the `main` branch of your configured GitHub repository to activate the CI/CD pipeline. The command will remind you to do this.
+    ```bash
+    git add .
+    git commit -m "Initial commit of agent starter pack"
+    git push -u origin main
+    ```
+*   **Cloud Build Triggers:** Cloud Build triggers will be active. Pushes to `main` will typically trigger a deployment pipeline, and pull requests against `main` will trigger a PR check pipeline. View them in the Google Cloud Console under Cloud Build > Triggers in your CICD project.
+*   **Terraform State:** Your Terraform state, which tracks the infrastructure created, will be stored either locally in `deployment/terraform/terraform.tfstate` and `deployment/terraform/dev/terraform.tfstate` (if `--local-state` was used) or remotely in the GCS bucket named `<YOUR_CICD_PROJECT_ID>-terraform-state`.
+*   **Review Resources:** Check your Google Cloud projects (CICD, Dev, Staging, Prod) and your GitHub repository to see the created resources (Cloud Build triggers, connections, secrets, IAM bindings, potentially Cloud Run services, etc.).
+*   **Manual Steps:** Remember that this provides a *basic* setup. For production environments, review and enhance security, monitoring, and deployment strategies by consulting the manual setup instructions.
+
+### Manual CI/CD Setup
+
+For fine-grained control, enhanced security, and production-grade deployments, refer to the detailed instructions in `deployment/README.md`. The manual approach allows for:
+
+*   **Enhanced Security:** Configure stricter IAM permissions, network policies, and VPC Service Controls.
+*   **Custom Workflows:** Implement complex build, test, approval, and deployment steps tailored to your needs.
+*   **Environment-Specific Settings:** Precisely manage configurations (e.g., secrets, resource sizes) for each environment.
+*   **Advanced CI/CD:** Integrate with artifact registries, security scanning tools, monitoring systems, and other advanced CI/CD practices.
+
+____
+
+What I have run 
+
+ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ gcloud components install alpha
+
+
+All components are up to date.
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ 
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ gcloud components install beta
+
+
+All components are up to date.
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ 
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ # Install pipx if you don't have it
+ install --user pipx && python3 -m pipx ensurepath
+source ~/.bashrc  # or ~/.zshrc depending on your shell
+
+# Install the Agent Starter Pack
+pipx install agent-starter-pack@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ python3 -m pip install --user pipx && python3 -m pipx ensurepath
+Collecting pipx
+  Downloading pipx-1.7.1-py3-none-any.whl.metadata (18 kB)
+Collecting argcomplete>=1.9.4 (from pipx)
+  Downloading argcomplete-3.6.1-py3-none-any.whl.metadata (16 kB)
+Requirement already satisfied: packaging>=20 in /home/codespace/.local/lib/python3.12/site-packages (from pipx) (24.2)
+Requirement already satisfied: platformdirs>=2.1 in /home/codespace/.local/lib/python3.12/site-packages (from pipx) (4.3.6)
+Collecting userpath!=1.9,>=1.6 (from pipx)
+  Downloading userpath-1.9.2-py3-none-any.whl.metadata (3.0 kB)
+Collecting click (from userpath!=1.9,>=1.6->pipx)
+  Downloading click-8.1.8-py3-none-any.whl.metadata (2.3 kB)
+Downloading pipx-1.7.1-py3-none-any.whl (78 kB)
+Downloading argcomplete-3.6.1-py3-none-any.whl (43 kB)
+Downloading userpath-1.9.2-py3-none-any.whl (9.1 kB)
+Downloading click-8.1.8-py3-none-any.whl (98 kB)
+
+Installing collected packages: click, argcomplete, userpath, pipx
+Successfully installed argcomplete-3.6.1 click-8.1.8 pipx-1.7.1 userpath-1.9.2
+/home/codespace/.local/bin is already in PATH.
+/usr/local/py-utils/bin is already in PATH.
+
+⚠️  All pipx binary directories have been appended to PATH. If you are sure you want to proceed, try again with the '--force' flag.
+
+Otherwise pipx is ready to go! ✨ 🌟 ✨
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ source ~/.bashrc  # or ~/.zshrc depending on your shell
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ 
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ # Install the Agent Starter Pack
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ pipx install agent-starter-pack
+  installed package agent-starter-pack 0.2.2, installed using Python 3.12.1
+  These apps are now globally available
+    - agent-starter-pack
+done! ✨ 🌟 ✨
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ pipx upgrade agent-starter-pack  
+agent-starter-pack is already at latest version 0.2.2 (location: /usr/local/py-utils/venvs/agent-starter-pack)
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ agent-starter-pack create coding-crew-agent -d agent_engine -a crewai_coding_crew
+
+=== GCP Agent Starter Pack 🚀===
+Welcome to the Agent Starter Pack!
+This tool will help you create an end-to-end production-ready AI agent in GCP!
+
+
+> Default GCP region is 'us-central1'
+Enter desired GCP region (leave blank for default): 
+WARNING:google.auth._default:Authentication failed using Compute Engine authentication due to unavailable metadata server.
+> Warning: GCP environment setup failed: Failed to verify GCP credentials: Your default credentials were not found. To set up Application Default 
+Credentials, see https://cloud.google.com/docs/authentication/external/set-up-adc for more information.
+> Please check your authentication settings and permissions. Visit https://cloud.google.com/vertex-ai/docs/authentication for help.
+> Continuing with template processing...
+
+> 👍 Done. Execute the following command to get started:
+
+> Success! Your agent project is ready.
+
+📖 For more information on project structure, usage, and deployment, check out the README:
+   cat coding-crew-agent/README.md
+
+🚀 To get started, run the following command:
+   cd coding-crew-agent && make install && make playground
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ gcloud auth application-default login 
+Go to the following link in your browser, and complete the sign-in prompts:
+
+    https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fsdk.cloud.google.com%2Fapplicationdefaultauthcode.html&scope=openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fsqlservice.login&state=3WBOI8pyLbw1K32RSN9W78JkOo4NUu&prompt=consent&token_usage=remote&access_type=offline&code_challenge=Pts1up2fSAA-VjfjgG6SRJQgOCWCd3eDY4ruiKY8KBE&code_challenge_method=S256
+
+Once finished, enter the verification code provided in your browser: 4/0AQSTgQHROMHlX7nNvqFD_UJEAV-gHI_5fLpj2AgHcVPrk8NuDvd5G6Uj4U7TlYUcQpw92w
+
+Credentials saved to file: [/home/codespace/.config/gcloud/application_default_credentials.json]
+
+These credentials will be used by any library that requests Application Default Credentials (ADC).
+WARNING: 
+Cannot find a quota project to add to ADC. You might receive a "quota exceeded" or "API not enabled" error. Run $ gcloud auth application-default set-quota-project to add a quota project.
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ gcloud auth application-default set-quota-project gen-lang-client-0926890286
+
+Credentials saved to file: [/home/codespace/.config/gcloud/application_default_credentials.json]
+
+These credentials will be used by any library that requests Application Default Credentials (ADC).
+
+Quota project "gen-lang-client-0926890286" was added to ADC which can be used by Google client libraries for billing and quota. Note that some services may still bill the project owning the resource.
+
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ 
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ agent-starter-pack create coding-crew-agent -d agent_engine -a crewai_coding_crew
+
+
+=== GCP Agent Starter Pack 🚀===
+Welcome to the Agent Starter Pack!
+This tool will help you create an end-to-end production-ready AI agent in GCP!
+
+Error: Project directory '/workspaces/agent-starter-pack/coding-crew-agent' already exists
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ 
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ agent-starter-pack create langgraph-agent -d agent_engine -a langgraph_base_react
+
+=== GCP Agent Starter Pack 🚀===
+Welcome to the Agent Starter Pack!
+This tool will help you create an end-to-end production-ready AI agent in GCP!
+
+
+> Default GCP region is 'us-central1'
+Enter desired GCP region (leave blank for default): 
+WARNING:google.auth._default:No project ID could be determined. Consider running `gcloud config set project` or setting the GOOGLE_CLOUD_PROJECT environment variable
+
+> You are logged in with account: 'Unknown account'
+> You are using project: 'None'
+> Do you want to continue? (The CLI will check if Vertex AI is enabled in this project) [Y/skip/edit] (Y): n
+Please select one of the available options
+> Do you want to continue? (The CLI will check if Vertex AI is enabled in this project) [Y/skip/edit] (Y): ^C
+Operation cancelled by user
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ gcloud config set project
+ERROR: (gcloud.config.set) argument VALUE: Must be specified.
+Usage: gcloud config set SECTION/PROPERTY VALUE [optional flags]
+  optional flags may be  --help | --installation
+
+For detailed information on this command and its flags, run:
+  gcloud config set --help
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ gcloud config set project gen-lang-client-0926890286
+
+Updated property [core/project].
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ 
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ agent-starter-pack create langgraph-agent -d agent_engine -a langgraph_base_react
+
+=== GCP Agent Starter Pack 🚀===
+Welcome to the Agent Starter Pack!
+This tool will help you create an end-to-end production-ready AI agent in GCP!
+
+
+> Default GCP region is 'us-central1'
+Enter desired GCP region (leave blank for default): 
+
+> You are logged in with account: 'Unknown account'
+> You are using project: 'gen-lang-client-0926890286'
+> Do you want to continue? (The CLI will check if Vertex AI is enabled in this project) [Y/skip/edit] (Y): y
+Please select one of the available options
+> Do you want to continue? (The CLI will check if Vertex AI is enabled in this project) [Y/skip/edit] (Y): Y
+> Successfully configured project: gen-lang-client-0926890286
+> Testing GCP and Vertex AI Connection...
+> ✓ Successfully verified connection to Vertex AI in project gen-lang-client-0926890286
+
+> 👍 Done. Execute the following command to get started:
+
+> Success! Your agent project is ready.
+
+📖 For more information on project structure, usage, and deployment, check out the README:
+   cat langgraph-agent/README.md
+
+🚀 To get started, run the following command:
+   cd langgraph-agent && make install && make playground
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ agent-starter-pack create agentic-agent -d agent_engine -a agentic_rag
+
+=== GCP Agent Starter Pack 🚀===
+Welcome to the Agent Starter Pack!
+This tool will help you create an end-to-end production-ready AI agent in GCP!
+
+
+> This agent includes a data ingestion pipeline.
+> Please select a datastore type for your data:
+1. Vertex AI Search - Managed, serverless document store that enables Google-quality search and RAG for generative AI.
+2. Vertex AI Vector Search - Scalable vector search engine for building search, recommendation systems, and generative AI applications. Based on ScaNN 
+algorithm.
+
+Enter the number of your choice [1/2] (1): 2
+
+> Default GCP region is 'us-central1'
+Enter desired GCP region (leave blank for default): 
+
+> You are logged in with account: 'Unknown account'
+> You are using project: 'gen-lang-client-0926890286'
+> Do you want to continue? (The CLI will check if Vertex AI is enabled in this project) [Y/skip/edit] (Y): Y
+> Successfully configured project: gen-lang-client-0926890286
+> Testing GCP and Vertex AI Connection...
+> ✓ Successfully verified connection to Vertex AI in project gen-lang-client-0926890286
+
+===== DATA INGESTION SETUP =====
+This agent uses a datastore for grounded responses.
+The agent will work without data, but for optimal results:
+1. Set up dev environment:
+   `export PROJECT_ID=gen-lang-client-0926890286 && cd agentic-agent && make setup-dev-env`
+
+   See deployment/README.md for more info
+2. Run the data ingestion pipeline:
+   `export PROJECT_ID=gen-lang-client-0926890286 && cd agentic-agent && make data-ingestion`
+
+   See data_ingestion/README.md for more info
+=================================
+
+
+> 👍 Done. Execute the following command to get started:
+
+> Success! Your agent project is ready.
+
+📖 For more information on project structure, usage, and deployment, check out the README:
+   cat agentic-agent/README.md
+
+🚀 To get started, run the following command:
+   cd agentic-agent && make install && make playground
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ agent-starter-pack create live-api-agent -d agent_engine -a live_api
+
+=== GCP Agent Starter Pack 🚀===
+Welcome to the Agent Starter Pack!
+This tool will help you create an end-to-end production-ready AI agent in GCP!
+
+
+> Default GCP region is 'us-central1'
+Enter desired GCP region (leave blank for default): 
+
+> You are logged in with account: 'Unknown account'
+> You are using project: 'gen-lang-client-0926890286'
+> Do you want to continue? (The CLI will check if Vertex AI is enabled in this project) [Y/skip/edit] (Y): Y
+> Successfully configured project: gen-lang-client-0926890286
+> Testing GCP and Vertex AI Connection...
+> ✓ Successfully verified connection to Vertex AI in project gen-lang-client-0926890286
+ERROR:root:Failed to process template: Invalid deployment target 'agent_engine'. Available targets: ['cloud_run']
+Error: Invalid deployment target 'agent_engine'. Available targets: ['cloud_run']
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ pip install --upgrade agent-starter-pack
+Collecting agent-starter-pack
+  Using cached agent_starter_pack-0.2.2-py3-none-any.whl.metadata (8.2 kB)
+Collecting backoff>=2.2.1 (from agent-starter-pack)
+  Using cached backoff-2.2.1-py3-none-any.whl.metadata (14 kB)
+Requirement already satisfied: click~=8.1.7 in /home/codespace/.local/lib/python3.12/site-packages (from agent-starter-pack) (8.1.8)
+Collecting cookiecutter~=2.5.0 (from agent-starter-pack)
+  Using cached cookiecutter-2.5.0-py3-none-any.whl.metadata (7.3 kB)
+Collecting google-cloud-aiplatform~=1.81.0 (from agent-starter-pack)
+  Using cached google_cloud_aiplatform-1.81.0-py2.py3-none-any.whl.metadata (32 kB)
+Requirement already satisfied: pyyaml~=6.0.1 in /home/codespace/.local/lib/python3.12/site-packages (from agent-starter-pack) (6.0.2)
+Collecting rich~=13.7.0 (from agent-starter-pack)
+  Using cached rich-13.7.1-py3-none-any.whl.metadata (18 kB)
+Collecting binaryornot>=0.4.4 (from cookiecutter~=2.5.0->agent-starter-pack)
+  Using cached binaryornot-0.4.4-py2.py3-none-any.whl.metadata (6.0 kB)
+Requirement already satisfied: Jinja2<4.0.0,>=2.7 in /home/codespace/.local/lib/python3.12/site-packages (from cookiecutter~=2.5.0->agent-starter-pack) (3.1.6)
+Collecting python-slugify>=4.0.0 (from cookiecutter~=2.5.0->agent-starter-pack)
+  Using cached python_slugify-8.0.4-py2.py3-none-any.whl.metadata (8.5 kB)
+Requirement already satisfied: requests>=2.23.0 in /home/codespace/.local/lib/python3.12/site-packages (from cookiecutter~=2.5.0->agent-starter-pack) (2.32.3)
+Requirement already satisfied: arrow in /home/codespace/.local/lib/python3.12/site-packages (from cookiecutter~=2.5.0->agent-starter-pack) (1.3.0)
+^[[DCollecting google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,<3.0.0dev,>=1.34.1 (from google-api-core[grpc]!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,<3.0.0dev,>=1.34.1->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached google_api_core-2.24.2-py3-none-any.whl.metadata (3.0 kB)
+Collecting google-auth<3.0.0dev,>=2.14.1 (from google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached google_auth-2.38.0-py2.py3-none-any.whl.metadata (4.8 kB)
+Collecting proto-plus<2.0.0dev,>=1.22.3 (from google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached proto_plus-1.26.1-py3-none-any.whl.metadata (2.2 kB)
+Collecting protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<6.0.0dev,>=3.20.2 (from google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached protobuf-5.29.4-cp38-abi3-manylinux2014_x86_64.whl.metadata (592 bytes)
+Requirement already satisfied: packaging>=14.3 in /home/codespace/.local/lib/python3.12/site-packages (from google-cloud-aiplatform~=1.81.0->agent-starter-pack) (24.2)
+Collecting google-cloud-storage<3.0.0dev,>=1.32.0 (from google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached google_cloud_storage-2.19.0-py2.py3-none-any.whl.metadata (9.1 kB)
+Collecting google-cloud-bigquery!=3.20.0,<4.0.0dev,>=1.15.0 (from google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached google_cloud_bigquery-3.31.0-py3-none-any.whl.metadata (7.7 kB)
+Collecting google-cloud-resource-manager<3.0.0dev,>=1.3.3 (from google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached google_cloud_resource_manager-1.14.2-py3-none-any.whl.metadata (9.6 kB)
+^[[DCollecting shapely<3.0.0dev (from google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached shapely-2.1.0rc1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.7 kB)
+Collecting pydantic<3 (from google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached pydantic-2.11.1-py3-none-any.whl.metadata (63 kB)
+Requirement already satisfied: typing-extensions in /home/codespace/.local/lib/python3.12/site-packages (from google-cloud-aiplatform~=1.81.0->agent-starter-pack) (4.12.2)
+Collecting docstring-parser<1 (from google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached docstring_parser-0.16-py3-none-any.whl.metadata (3.0 kB)
+Collecting markdown-it-py>=2.2.0 (from rich~=13.7.0->agent-starter-pack)
+  Using cached markdown_it_py-3.0.0-py3-none-any.whl.metadata (6.9 kB)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /home/codespace/.local/lib/python3.12/site-packages (from rich~=13.7.0->agent-starter-pack) (2.19.1)
+Collecting chardet>=3.0.2 (from binaryornot>=0.4.4->cookiecutter~=2.5.0->agent-starter-pack)
+  Using cached chardet-5.2.0-py3-none-any.whl.metadata (3.4 kB)
+Collecting googleapis-common-protos<2.0.0,>=1.56.2 (from google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,<3.0.0dev,>=1.34.1->google-api-core[grpc]!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,<3.0.0dev,>=1.34.1->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached googleapis_common_protos-1.69.2-py3-none-any.whl.metadata (9.3 kB)
+Collecting grpcio<2.0dev,>=1.33.2 (from google-api-core[grpc]!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,<3.0.0dev,>=1.34.1->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached grpcio-1.71.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (3.8 kB)
+Collecting grpcio-status<2.0.dev0,>=1.33.2 (from google-api-core[grpc]!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,<3.0.0dev,>=1.34.1->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached grpcio_status-1.71.0-py3-none-any.whl.metadata (1.1 kB)
+Collecting cachetools<6.0,>=2.0.0 (from google-auth<3.0.0dev,>=2.14.1->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached cachetools-5.5.2-py3-none-any.whl.metadata (5.4 kB)
+Collecting pyasn1-modules>=0.2.1 (from google-auth<3.0.0dev,>=2.14.1->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached pyasn1_modules-0.4.2-py3-none-any.whl.metadata (3.5 kB)
+Collecting rsa<5,>=3.1.4 (from google-auth<3.0.0dev,>=2.14.1->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached rsa-4.9-py3-none-any.whl.metadata (4.2 kB)
+Collecting google-cloud-core<3.0.0,>=2.4.1 (from google-cloud-bigquery!=3.20.0,<4.0.0dev,>=1.15.0->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached google_cloud_core-2.4.3-py2.py3-none-any.whl.metadata (2.7 kB)
+Collecting google-resumable-media<3.0.0,>=2.0.0 (from google-cloud-bigquery!=3.20.0,<4.0.0dev,>=1.15.0->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached google_resumable_media-2.7.2-py2.py3-none-any.whl.metadata (2.2 kB)
+Requirement already satisfied: python-dateutil<3.0.0,>=2.8.2 in /home/codespace/.local/lib/python3.12/site-packages (from google-cloud-bigquery!=3.20.0,<4.0.0dev,>=1.15.0->google-cloud-aiplatform~=1.81.0->agent-starter-pack) (2.9.0.post0)
+Collecting grpc-google-iam-v1<1.0.0,>=0.14.0 (from google-cloud-resource-manager<3.0.0dev,>=1.3.3->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached grpc_google_iam_v1-0.14.2-py3-none-any.whl.metadata (9.1 kB)
+Collecting google-crc32c<2.0dev,>=1.0 (from google-cloud-storage<3.0.0dev,>=1.32.0->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached google_crc32c-1.7.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.3 kB)
+Requirement already satisfied: MarkupSafe>=2.0 in /home/codespace/.local/lib/python3.12/site-packages (from Jinja2<4.0.0,>=2.7->cookiecutter~=2.5.0->agent-starter-pack) (3.0.2)
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich~=13.7.0->agent-starter-pack)
+  Using cached mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+Collecting annotated-types>=0.6.0 (from pydantic<3->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.33.0 (from pydantic<3->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached pydantic_core-2.33.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.8 kB)
+Collecting typing-inspection>=0.4.0 (from pydantic<3->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached typing_inspection-0.4.0-py3-none-any.whl.metadata (2.6 kB)
+Collecting text-unidecode>=1.3 (from python-slugify>=4.0.0->cookiecutter~=2.5.0->agent-starter-pack)
+  Using cached text_unidecode-1.3-py2.py3-none-any.whl.metadata (2.4 kB)
+Requirement already satisfied: charset-normalizer<4,>=2 in /home/codespace/.local/lib/python3.12/site-packages (from requests>=2.23.0->cookiecutter~=2.5.0->agent-starter-pack) (3.4.1)
+Requirement already satisfied: idna<4,>=2.5 in /home/codespace/.local/lib/python3.12/site-packages (from requests>=2.23.0->cookiecutter~=2.5.0->agent-starter-pack) (3.10)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /home/codespace/.local/lib/python3.12/site-packages (from requests>=2.23.0->cookiecutter~=2.5.0->agent-starter-pack) (2.3.0)
+Requirement already satisfied: certifi>=2017.4.17 in /home/codespace/.local/lib/python3.12/site-packages (from requests>=2.23.0->cookiecutter~=2.5.0->agent-starter-pack) (2025.1.31)
+Requirement already satisfied: numpy>=1.21 in /home/codespace/.local/lib/python3.12/site-packages (from shapely<3.0.0dev->google-cloud-aiplatform~=1.81.0->agent-starter-pack) (2.2.4)
+Requirement already satisfied: types-python-dateutil>=2.8.10 in /home/codespace/.local/lib/python3.12/site-packages (from arrow->cookiecutter~=2.5.0->agent-starter-pack) (2.9.0.20241206)
+Collecting pyasn1<0.7.0,>=0.6.1 (from pyasn1-modules>=0.2.1->google-auth<3.0.0dev,>=2.14.1->google-cloud-aiplatform~=1.81.0->agent-starter-pack)
+  Using cached pyasn1-0.6.1-py3-none-any.whl.metadata (8.4 kB)
+Requirement already satisfied: six>=1.5 in /home/codespace/.local/lib/python3.12/site-packages (from python-dateutil<3.0.0,>=2.8.2->google-cloud-bigquery!=3.20.0,<4.0.0dev,>=1.15.0->google-cloud-aiplatform~=1.81.0->agent-starter-pack) (1.17.0)
+Using cached agent_starter_pack-0.2.2-py3-none-any.whl (2.4 MB)
+Using cached backoff-2.2.1-py3-none-any.whl (15 kB)
+Using cached cookiecutter-2.5.0-py3-none-any.whl (39 kB)
+Using cached google_cloud_aiplatform-1.81.0-py2.py3-none-any.whl (7.3 MB)
+Using cached rich-13.7.1-py3-none-any.whl (240 kB)
+Using cached binaryornot-0.4.4-py2.py3-none-any.whl (9.0 kB)
+Using cached docstring_parser-0.16-py3-none-any.whl (36 kB)
+Using cached google_api_core-2.24.2-py3-none-any.whl (160 kB)
+Using cached google_auth-2.38.0-py2.py3-none-any.whl (210 kB)
+Using cached google_cloud_bigquery-3.31.0-py3-none-any.whl (250 kB)
+Using cached google_cloud_resource_manager-1.14.2-py3-none-any.whl (394 kB)
+Using cached google_cloud_storage-2.19.0-py2.py3-none-any.whl (131 kB)
+Using cached markdown_it_py-3.0.0-py3-none-any.whl (87 kB)
+Using cached proto_plus-1.26.1-py3-none-any.whl (50 kB)
+Using cached protobuf-5.29.4-cp38-abi3-manylinux2014_x86_64.whl (319 kB)
+Using cached pydantic-2.11.1-py3-none-any.whl (442 kB)
+Using cached pydantic_core-2.33.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.0 MB)
+Using cached python_slugify-8.0.4-py2.py3-none-any.whl (10 kB)
+Using cached shapely-2.1.0rc1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.1 MB)
+Using cached annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Using cached cachetools-5.5.2-py3-none-any.whl (10 kB)
+Using cached chardet-5.2.0-py3-none-any.whl (199 kB)
+Using cached google_cloud_core-2.4.3-py2.py3-none-any.whl (29 kB)
+Using cached google_crc32c-1.7.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (32 kB)
+Using cached google_resumable_media-2.7.2-py2.py3-none-any.whl (81 kB)
+Using cached googleapis_common_protos-1.69.2-py3-none-any.whl (293 kB)
+Using cached grpc_google_iam_v1-0.14.2-py3-none-any.whl (19 kB)
+Using cached grpcio-1.71.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (5.9 MB)
+Using cached grpcio_status-1.71.0-py3-none-any.whl (14 kB)
+Using cached mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Using cached pyasn1_modules-0.4.2-py3-none-any.whl (181 kB)
+Using cached rsa-4.9-py3-none-any.whl (34 kB)
+Using cached text_unidecode-1.3-py2.py3-none-any.whl (78 kB)
+Using cached typing_inspection-0.4.0-py3-none-any.whl (14 kB)
+Using cached pyasn1-0.6.1-py3-none-any.whl (83 kB)
+Installing collected packages: text-unidecode, typing-inspection, shapely, python-slugify, pydantic-core, pyasn1, protobuf, mdurl, grpcio, google-crc32c, docstring-parser, chardet, cachetools, backoff, annotated-types, rsa, pydantic, pyasn1-modules, proto-plus, markdown-it-py, googleapis-common-protos, google-resumable-media, binaryornot, rich, grpcio-status, google-auth, grpc-google-iam-v1, google-api-core, cookiecutter, google-cloud-core, google-cloud-storage, google-cloud-resource-manager, google-cloud-bigquery, google-cloud-aiplatform, agent-starter-pack
+Successfully installed agent-starter-pack-0.2.2 annotated-types-0.7.0 backoff-2.2.1 binaryornot-0.4.4 cachetools-5.5.2 chardet-5.2.0 cookiecutter-2.5.0 docstring-parser-0.16 google-api-core-2.24.2 google-auth-2.38.0 google-cloud-aiplatform-1.81.0 google-cloud-bigquery-3.31.0 google-cloud-core-2.4.3 google-cloud-resource-manager-1.14.2 google-cloud-storage-2.19.0 google-crc32c-1.7.1 google-resumable-media-2.7.2 googleapis-common-protos-1.69.2 grpc-google-iam-v1-0.14.2 grpcio-1.71.0 grpcio-status-1.71.0 markdown-it-py-3.0.0 mdurl-0.1.2 proto-plus-1.26.1 protobuf-5.29.4 pyasn1-0.6.1 pyasn1-modules-0.4.2 pydantic-2.11.1 pydantic-core-2.33.0 python-slugify-8.0.4 rich-13.7.1 rsa-4.9 shapely-2.1.0rc1 text-unidecode-1.3 typing-inspection-0.4.0
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ pip uninstall agent-starter-pack
+Found existing installation: agent-starter-pack 0.2.2
+Uninstalling agent-starter-pack-0.2.2:
+  Would remove:
+    /usr/local/python/3.12.1/bin/agent-starter-pack
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agent_starter_pack-0.2.2.dist-info/*
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/agentic_rag/README.md
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/agentic_rag/app/agent.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/agentic_rag/app/retrievers.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/agentic_rag/app/templates.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/agentic_rag/notebooks/evaluating_langgraph_agent.ipynb
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/agentic_rag/template/.templateconfig.yaml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/agentic_rag/tests/integration/test_agent.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/crewai_coding_crew/README.md
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/crewai_coding_crew/app/agent.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/crewai_coding_crew/app/crew/config/agents.yaml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/crewai_coding_crew/app/crew/config/tasks.yaml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/crewai_coding_crew/app/crew/crew.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/crewai_coding_crew/notebooks/evaluating_crewai_agent.ipynb
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/crewai_coding_crew/notebooks/evaluating_langgraph_agent.ipynb
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/crewai_coding_crew/template/.templateconfig.yaml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/crewai_coding_crew/tests/integration/test_agent.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/langgraph_base_react/README.md
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/langgraph_base_react/app/agent.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/langgraph_base_react/notebooks/evaluating_langgraph_agent.ipynb
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/langgraph_base_react/template/.templateconfig.yaml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/langgraph_base_react/tests/integration/test_agent.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/live_api/README.md
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/live_api/app/agent.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/live_api/app/server.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/live_api/app/templates.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/live_api/app/vector_store.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/live_api/template/.templateconfig.yaml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/live_api/tests/integration/test_server_e2e.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/live_api/tests/load_test/load_test.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/agents/live_api/tests/unit/test_server.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/.gitignore
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/Makefile
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/README.md
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/app/utils/tracing.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/app/utils/typing.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/README.md
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/cd/deploy-to-prod.yaml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/cd/staging.yaml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/ci/pr_checks.yaml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/apis.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/build_triggers.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/dev/apis.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/dev/iam.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/dev/log_sinks.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/dev/providers.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/dev/storage.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/dev/variables.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/dev/vars/env.tfvars
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/iam.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/locals.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/log_sinks.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/providers.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/service_accounts.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/storage.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/variables.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/deployment/terraform/vars/env.tfvars
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/pyproject.toml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/base_template/tests/unit/test_utils/test_tracing_exporter.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/cli/commands/create.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/cli/commands/setup_cicd.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/cli/main.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/cli/utils/*
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/data_ingestion/README.md
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/data_ingestion/data_ingestion_pipeline/components/ingest_data.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/data_ingestion/data_ingestion_pipeline/components/process_data.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/data_ingestion/data_ingestion_pipeline/pipeline.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/data_ingestion/data_ingestion_pipeline/submit_pipeline.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/data_ingestion/pyproject.toml
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/data_ingestion/uv.lock
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/agent_engine/app/agent_engine_app.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/agent_engine/app/utils/gcs.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/agent_engine/deployment_metadata.json
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/agent_engine/notebooks/intro_agent_engine.ipynb
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/agent_engine/tests/integration/test_agent_engine_app.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/agent_engine/tests/load_test/.results/.placeholder
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/agent_engine/tests/load_test/README.md
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/agent_engine/tests/load_test/load_test.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/agent_engine/tests/unit/test_dummy.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/cloud_run/Dockerfile
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/cloud_run/app/server.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/cloud_run/tests/integration/test_server_e2e.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/cloud_run/tests/load_test/.results/.placeholder
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/cloud_run/tests/load_test/README.md
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/cloud_run/tests/load_test/load_test.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/cloud_run/tests/unit/test_server.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/deployment_targets/cloud_run/uv.lock
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/package-lock.json
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/package.json
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/public/favicon.ico
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/public/index.html
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/public/robots.txt
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/App.scss
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/App.test.tsx
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/App.tsx
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/components/audio-pulse/AudioPulse.tsx
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/components/audio-pulse/audio-pulse.scss
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/components/control-tray/ControlTray.tsx
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/components/control-tray/control-tray.scss
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/components/logger/Logger.tsx
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/components/logger/logger.scss
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/components/logger/mock-logs.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/components/side-panel/SidePanel.tsx
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/components/side-panel/side-panel.scss
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/contexts/LiveAPIContext.tsx
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/hooks/use-live-api.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/hooks/use-media-stream-mux.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/hooks/use-screen-capture.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/hooks/use-webcam.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/index.css
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/index.tsx
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/multimodal-live-types.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/react-app-env.d.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/reportWebVitals.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/setupTests.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/utils/audio-recorder.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/utils/audio-streamer.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/utils/audioworklet-registry.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/utils/multimodal-live-client.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/utils/store-logger.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/utils/utils.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/utils/worklets/audio-processing.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/src/utils/worklets/vol-meter.ts
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/live_api_react/frontend/tsconfig.json
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/streamlit/frontend/side_bar.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/streamlit/frontend/streamlit_app.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/streamlit/frontend/style/app_markdown.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/streamlit/frontend/utils/chat_utils.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/streamlit/frontend/utils/local_chat_history.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/streamlit/frontend/utils/message_editing.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/streamlit/frontend/utils/multimodal_utils.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/streamlit/frontend/utils/stream_handler.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/frontends/streamlit/frontend/utils/title_summary.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/containers/data_processing/Dockerfile
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/containers/e2e-tests/Dockerfile
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/locks/uv-agentic_rag-agent_engine.lock
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/locks/uv-agentic_rag-cloud_run.lock
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/locks/uv-crewai_coding_crew-agent_engine.lock
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/locks/uv-crewai_coding_crew-cloud_run.lock
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/locks/uv-langgraph_base_react-agent_engine.lock
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/locks/uv-langgraph_base_react-cloud_run.lock
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/locks/uv-live_api-cloud_run.lock
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/setup_cicd/cicd_variables.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/setup_cicd/github.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/resources/setup_cicd/providers.tf
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/utils/generate_locks.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/utils/lock_utils.py
+    /usr/local/python/3.12.1/lib/python3.12/site-packages/src/utils/watch_and_rebuild.py
+Proceed (Y/n)? y
+  Successfully uninstalled agent-starter-pack-0.2.2
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ pipx install agent-starter-pack
+'agent-starter-pack' already seems to be installed. Not modifying existing installation in '/usr/local/py-utils/venvs/agent-starter-pack'. Pass
+'--force' to force installation.
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ pipx install --force agent-starter-pack
+Installing to existing venv 'agent-starter-pack'
+  installed package agent-starter-pack 0.2.2, installed using Python 3.12.1
+  These apps are now globally available
+    - agent-starter-pack
+done! ✨ 🌟 ✨
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ python3 -m venv venv
+
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ source venv/Scripts/activate
+bash: venv/Scripts/activate: No such file or directory
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ .\venv\Scripts\Activate
+bash: .venvScriptsActivate: command not found
+@ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ source venv/bin/activate
+(venv) @ivanmolanski ➜ /workspaces/agent-starter-pack (main) $ 
+
+______
+
+
+## ⚙️ CI/CD Setup (Experimental)
+
+This starter pack provides an *experimental* command to automate the setup of a basic CI/CD pipeline. This pipeline connects your agent to a GitHub repository and uses Google Cloud Build for automated testing and deployment.
+
+**⚠️ Important Notes:**
+
+*   **Experimental Feature:** The `setup-cicd` command is under active development. Expect potential changes and report any issues you encounter.
+*   **Production Readiness:** For production deployments, we *strongly* recommend following the manual setup instructions in the `deployment/README.md` file. The manual approach provides greater control over security, customization, and environment-specific configurations. This automated setup is primarily intended for development and testing purposes.
+*   **Git Provider:** Currently, only GitHub is supported. Support for other Git providers may be added in the future.
+
+### Quick CI/CD Setup (Automated)
+
+This command streamlines the CI/CD setup process. It handles:
+
+1.  **GitHub Repository:** Creates a new GitHub repository or connects to an existing one (prompts for confirmation if the existing repository is not empty).
+2.  **Cloud Build Connection:** Establishes a connection between your GitHub repository and Google Cloud Build.
+3.  **Development Environment:** Sets up the infrastructure for your development environment using Terraform (optional, requires `--dev-project`).
+4.  **CI/CD Triggers:** Configures basic Cloud Build triggers for pull request checks and deployments.
+5.  **Terraform State:** By default, configures remote Terraform state management using a Google Cloud Storage (GCS) bucket. You can opt for local state management using `--local-state`.
+
+**Prerequisites:**
+
+*   Run this command from the root directory of your `agent-starter-pack` project (the directory containing `pyproject.toml`).
+*   Install the `gh` CLI and authenticate with GitHub (`gh auth login`).
+*   Authenticate with Google Cloud (`gcloud auth application-default login`).
+*   Install Terraform.
+
+**Command Usage:**
+```bash
+agent-starter-pack setup-cicd \
+    --staging-project <YOUR_STAGING_PROJECT_ID> \
+    --prod-project <YOUR_PROD_PROJECT_ID> \
+    --cicd-project <YOUR_CICD_PROJECT_ID> \
+    [--dev-project <YOUR_DEV_PROJECT_ID>] \
+    [--region <GCP_REGION>] \
+    [--repository-name <GITHUB_REPO_NAME>] \
+    [--repository-owner <GITHUB_USERNAME_OR_ORG>] \
+    [--host-connection-name <CONNECTION_NAME>] \
+    [--github-pat <YOUR_GITHUB_PAT>] \
+    [--github-app-installation-id <YOUR_GITHUB_APP_INSTALLATION_ID>] \
+    [--local-state] \
+    [--debug] \
+    [--auto-approve]
+```
+
+**Options:**
+
+*   `--staging-project`: **Required.** The Google Cloud project ID for your staging environment.
+*   `--prod-project`: **Required.** The Google Cloud project ID for your production environment.
+*   `--cicd-project`: **Required.** The Google Cloud project ID where your CI/CD resources (Cloud Build, Secret Manager, etc.) will reside. This can be the same as your staging or production project.
+*   `--dev-project`: (Optional) The Google Cloud project ID for your development environment. If provided, the setup will also configure a development environment via Terraform.
+*   `--region`: The GCP region to use for resources (default: `us-central1`).
+*   `--repository-name`: (Optional) The name for the GitHub repository. If omitted in interactive mode, you will be prompted, or a name will be generated (e.g., `genai-app-1678886400`). Required in programmatic mode if the repository doesn't exist.
+*   `--repository-owner`: (Optional) Your GitHub username or organization name where the repository resides or will be created. If omitted in interactive mode, it defaults to your authenticated GitHub user, and you will be prompted. Required in programmatic mode if the repository doesn't exist.
+*   `--host-connection-name`: (Optional) The name for the Cloud Build connection to GitHub (default: `github-connection`).
+*   `--github-pat`: (Optional) Your GitHub Personal Access Token (PAT) with repository access. Required for programmatic mode. If provided, you must also provide `--github-app-installation-id`.
+*   `--github-app-installation-id`: (Optional) The installation ID of the Google Cloud Build GitHub App on your repository. Required if using `--github-pat` (programmatic mode).
+*   `--local-state`: Use local Terraform state instead of a remote GCS bucket. This is generally *not* recommended for collaborative projects or production environments.
+*   `--debug`: Enable debug logging for more verbose output.
+*   `--auto-approve`: Skip interactive confirmation prompts (e.g., for using a non-empty repository). Use with caution!
+
+**Project Requirements:**
+
+You need at least *two* Google Cloud projects: one for staging and one for production. The CI/CD project can be the same as either the staging or production project, or a separate third project. A separate development project is optional but recommended for isolating development infrastructure.
+
+**Interactive Mode vs. Programmatic Mode:**
+
+The command operates in two modes:
+
+*   **Interactive Mode (Default):** If you *don't* provide `--github-pat` and `--github-app-installation-id`, the command runs interactively. It will:
+    *   Prompt you to choose between creating a new repository or using an existing one.
+    *   Prompt for repository details (name, owner) if not provided via flags.
+    *   Guide you through authenticating with GitHub via OAuth to create the Cloud Build connection.
+    *   Create the GitHub repository if requested.
+*   **Programmatic Mode:** If you provide *both* `--github-pat` and `--github-app-installation-id`, the command runs non-interactively using these credentials. This is suitable for automation scripts.
+    *   It assumes the GitHub repository and the Cloud Build GitHub App installation already exist.
+    *   It will create/update a secret in Google Cloud Secret Manager (`github-pat` in the CICD project) to store the provided PAT.
+
+**Authentication:**
+
+*   **Interactive Mode:** Uses OAuth for the Cloud Build connection to GitHub. You'll be prompted in your browser to authorize the Google Cloud Build application. Requires `gh` CLI authentication.
+*   **Programmatic Mode:** Uses the provided GitHub Personal Access Token (PAT) and GitHub App installation ID. The PAT is stored securely in Google Cloud Secret Manager.
+
+**Steps Performed (High-Level):**
+
+1.  **Validation & Setup:**
+    *   Validates that the command is run from the project root.
+    *   Prompts for Git provider (currently only GitHub).
+    *   Handles GitHub authentication (`gh auth login` check).
+    *   Ensures required Google Cloud APIs (e.g., `secretmanager.googleapis.com`, `cloudbuild.googleapis.com`, `cloudresourcemanager.googleapis.com`) are enabled in the relevant projects.
+2.  **Repository & Connection Setup (Mode Dependent):**
+    *   **Interactive:** Prompts for repository details, creates the GitHub repository (if requested), and creates the Cloud Build connection via OAuth flow.
+    *   **Programmatic:** Creates/updates the GitHub PAT secret in Secret Manager. Assumes repository and connection pre-exist configuration-wise but Terraform will manage them.
+3.  **Terraform Configuration:**
+    *   Copies necessary Terraform files (`cloudbuild_cicd.tf`, `github_repo.tf`, etc.) into `deployment/terraform/`.
+    *   Sets up the Terraform backend configuration (`backend.tf`) in `deployment/terraform/` and `deployment/terraform/dev/` to use a GCS bucket (unless `--local-state` is used). The bucket name will be `<CICD_PROJECT_ID>-terraform-state`.
+    *   Updates `deployment/terraform/vars/env.tfvars` with project IDs, region, repository details (`repository_name`, `repository_owner`), connection details (`host_connection_name`), and authentication/mode flags (`github_pat_secret_id`, `github_app_installation_id`, `connection_exists`, `repository_exists`).
+    *   Updates `deployment/terraform/dev/vars/env.tfvars` with the development project ID (if provided).
+    *   Updates `deployment/terraform/build_triggers.tf` to correctly reference the Terraform-managed GitHub repository resource.
+4.  **Terraform Apply:**
+    *   Runs `terraform init` and `terraform apply` for the development environment (`deployment/terraform/dev/`) if `--dev-project` was provided.
+    *   Runs `terraform init` and `terraform apply` for the main CI/CD and prod/staging configuration (`deployment/terraform/`). This step creates/manages the GitHub repository (if not existing), Cloud Build connection, triggers, IAM bindings, and potentially other resources defined in the Terraform files.
+5.  **Git Setup:**
+    *   Initializes a Git repository (`git init -b main`) in the current directory if one doesn't exist.
+    *   Adds a Git remote named `origin` pointing to the configured GitHub repository URL if the remote doesn't already exist.
+
+**After Running the Command:**
+
+*   **Commit and Push:** You *must* commit your project files and push them to the `main` branch of your configured GitHub repository to activate the CI/CD pipeline. The command will remind you to do this.
+    ```bash
+    git add .
+    git commit -m "Initial commit of agent starter pack"
+    git push -u origin main
+    ```
+*   **Cloud Build Triggers:** Cloud Build triggers will be active. Pushes to `main` will typically trigger a deployment pipeline, and pull requests against `main` will trigger a PR check pipeline. View them in the Google Cloud Console under Cloud Build > Triggers in your CICD project.
+*   **Terraform State:** Your Terraform state, which tracks the infrastructure created, will be stored either locally in `deployment/terraform/terraform.tfstate` and `deployment/terraform/dev/terraform.tfstate` (if `--local-state` was used) or remotely in the GCS bucket named `<YOUR_CICD_PROJECT_ID>-terraform-state`.
+*   **Review Resources:** Check your Google Cloud projects (CICD, Dev, Staging, Prod) and your GitHub repository to see the created resources (Cloud Build triggers, connections, secrets, IAM bindings, potentially Cloud Run services, etc.).
+*   **Manual Steps:** Remember that this provides a *basic* setup. For production environments, review and enhance security, monitoring, and deployment strategies by consulting the manual setup instructions.
+
+### Manual CI/CD Setup
+
+For fine-grained control, enhanced security, and production-grade deployments, refer to the detailed instructions in `deployment/README.md`. The manual approach allows for:
+
+*   **Enhanced Security:** Configure stricter IAM permissions, network policies, and VPC Service Controls.
+*   **Custom Workflows:** Implement complex build, test, approval, and deployment steps tailored to your needs.
+*   **Environment-Specific Settings:** Precisely manage configurations (e.g., secrets, resource sizes) for each environment.
+*   **Advanced CI/CD:** Integrate with artifact registries, security scanning tools, monitoring systems, and other advanced CI/CD practices.
+
+____
+
+# Troubleshooting
+
+This guide helps resolve common issues with the Agent Starter Pack.
+
+## Authentication Issues
+
+For detailed information on authentication with Vertex AI, visit the [official documentation](https://cloud.google.com/vertex-ai/docs/authentication).
+
+### "Could not find credentials" or "Could not find project" Error
+
+**Problem**: Missing credentials error with Vertex AI.
+
+**Solution**:
+
+1.  Log in to Google Cloud: `gcloud auth login --update-adc`
+2.  Set the correct project:
+    ```bash
+    gcloud config set project YOUR_PROJECT_ID
+    gcloud auth application-default set-quota-project YOUR_PROJECT_ID
+    ```
+
+### Vertex AI API Not Enabled
+
+**Problem**: Operations fail because the Vertex AI API is not enabled in your project.
+
+**Solution**:
+
+1. Enable the Vertex AI API:
+   ```bash
+   gcloud services enable aiplatform.googleapis.com
+   ```
+
+2. Verify the API is enabled:
+   ```bash
+   gcloud services list --filter=aiplatform.googleapis.com
+   ```
+
+### Permission Denied Errors
+**Problem**: "Permission denied" errors with Google Cloud APIs.
+
+**Solution**: Ensure your user or service account has the necessary IAM roles.  For example, for Vertex AI, you often need `roles/aiplatform.user`.  Grant roles using the `gcloud projects add-iam-policy-binding` command or the Cloud Console.
+
+### Command Not Found: agent-starter-pack
+
+**Problem**: "Command not found" error after installation.
+
+**Solution**:
+
+1. Verify installation:
+   ```bash
+   pip list | grep agent-starter-pack
+   ```
+2. Check PATH:
+   ```bash
+   echo $PATH
+   ```
+3. Reinstall if needed:
+   ```bash
+   pip install --user agent-starter-pack
+   ```
+4. For pipx:
+   ```bash
+   pipx ensurepath
+   source ~/.bashrc  # or ~/.zshrc
+   ```
+
+## Project Creation Issues
+
+### Project Creation Fails
+
+**Problem**: `agent-starter-pack create` fails.
+
+**Solution**:
+
+1.  **Check Error Messages:** Examine output for clues.
+2.  **Write Permissions:** Ensure write access to the directory.
+3.  **Project Name:** Use lowercase letters, numbers and hyphens only.
+4.  **Debug Mode:** Consider using debug mode to get more detailed error information:
+    ```bash
+    agent-starter-pack create my-project-name --debug
+    ```
+
+### Issues with Agent Engine
+
+Consider leveraging the [public product documentation](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/troubleshooting/set-up)
+
+## Getting More Help
+
+If issues persist:
+
+1.  **Check GitHub Issues:** Search for existing Github issues in the `agent-starter-pack` Github repository.
+2.  **File a New Issue:** Provide:
+
+    *   Problem description.
+    *   Steps to reproduce.
+    *   Error messages (preferably run with `--debug` flag for detailed logs).
+    *   Environment: OS, Python version, `agent-starter-pack` version, installation method, shell.
+
+    Skip to main content
+
+Terraform
+Install
+Tutorials
+
+Documentation
+Registry
+(opens in new tab)
+Try Cloud
+(opens in new tab)
+
+Search
+Command or control key
+K key
+
+GCP
+7 tutorials
+Infrastructure as Code
+Install
+Build
+Change
+Destroy
+Variables
+Outputs
+Resources
+Tutorial Library
+Certifications
+Community Forum
+(opens in new tab)
+Support
+(opens in new tab)
+GitHub
+(opens in new tab)
+Terraform Registry
+(opens in new tab)
+Developer
+Terraform
+Tutorials
+GCP
+Build
+Build infrastructure
+10min
+|
+Terraform
+Terraform
+
+Reference this often? Create an account to bookmark tutorials.
+
+With Terraform installed, you are ready to create some infrastructure.
+
+You will build infrastructure on Google Cloud Platform (GCP) for this tutorial, but Terraform can manage a wide variety of resources using providers. You can find more examples in the use cases section.
+
+As you follow these tutorials, you will use Terraform to provision, update, and destroy a simple set of infrastructure using the sample configuration provided. The sample configuration provisions a network and a Linux virtual machine. You will also learn about remote backends, input and output variables, and how to configure resource dependencies. These are the building blocks for more complex configurations.
+
+Tip
+
+While everything provisioned in this tutorial should fall within GCP's free tier, if you provision resources outside of the free tier, you may be charged. We are not responsible for any charges you may incur.
+
+Prerequisites
+A Google Cloud Platform account. If you do not have a GCP account, create one now. This tutorial can be completed using only the services included in the GCP free tier.
+
+The gcloud CLI installed locally.
+
+Terraform 1.2.0+ installed locally.
+
+Google Cloud Shell
+This tutorial is also available as an interactive tutorial within Google Cloud Shell. If you prefer, you can follow this tutorial in Google Cloud Shell.
+
+Set up GCP
+After creating your GCP account, create or modify the following resources to enable Terraform to provision your infrastructure:
+
+A GCP Project: GCP organizes resources into projects. Create one now in the GCP console and make note of the project ID. You can see a list of your projects in the cloud resource manager.
+
+Google Compute Engine: Enable the Google Compute Engine API for your project in the GCP console. Make sure to select the project you are using to follow this tutorial and click the "Enable" button.
+
+Write configuration
+The set of files used to describe infrastructure in Terraform is known as a Terraform configuration. You will now write your first configuration to create a network.
+
+Each Terraform configuration must be in its own working directory. Create a directory for your configuration.
+
+$ mkdir learn-terraform-gcp
+
+Change into the directory.
+
+$ cd learn-terraform-gcp
+
+Terraform loads all files ending in .tf or .tf.json in the working directory. Create a main.tf file for your configuration.
+
+$ touch main.tf
+
+Open main.tf in your text editor, and paste in the configuration below. Be sure to replace <PROJECT_ID> with your project's ID, and save the file.
+
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = "6.8.0"
+    }
+  }
+}
+
+provider "google" {
+  project = "<PROJECT_ID>"
+  region  = "us-central1"
+  zone    = "us-central1-c"
+}
+
+resource "google_compute_network" "vpc_network" {
+  name = "terraform-network"
+}
+
+This is a complete configuration that Terraform can apply. In the following sections you will review each block of the configuration in more detail.
+
+Terraform Block
+The terraform {} block contains Terraform settings, including the required providers Terraform will use to provision your infrastructure. For each provider, the source attribute defines an optional hostname, a namespace, and the provider type. Terraform installs providers from the Terraform Registry by default. In this example configuration, the google provider's source is defined as hashicorp/google, which is shorthand for registry.terraform.io/hashicorp/google.
+
+You can also define a version constraint for each provider in the required_providers block. The version attribute is optional, but we recommend using it to enforce the provider version. Without it, Terraform will always use the latest version of the provider, which may introduce breaking changes.
+
+To learn more, reference the provider source documentation.
+
+Providers
+The provider block configures the specified provider, in this case google. A provider is a plugin that Terraform uses to create and manage your resources. You can define multiple provider blocks in a Terraform configuration to manage resources from different providers.
+
+Resource
+Use resource blocks to define components of your infrastructure. A resource might be a physical component such as a server, or it can be a logical resource such as a Heroku application.
+
+Resource blocks have two strings before the block: the resource type and the resource name. In this example, the resource type is google_compute_network and the name is vpc_network. The prefix of the type maps to the name of the provider. In the example configuration, Terraform manages the google_compute_network resource with the google provider. Together, the resource type and resource name form a unique ID for the resource. For example, the ID for your network is google_compute_network.vpc_network.
+
+Resource blocks contain arguments which you use to configure the resource. Arguments can include things like machine sizes, disk image names, or VPC IDs. The Terraform Registry GCP documentation page documents the required and optional arguments for each GCP resource. For example, you can read the google_compute_network documentation to view the resource's supported arguments and available attributes.
+
+The GCP provider documents supported resources, including google_compute_network and its supported arguments.
+
+Authenticate to Google Cloud
+Terraform must authenticate to Google Cloud to create infrastructure.
+
+In your terminal, use the gcloud CLI to set up your Application Default Credentials.
+
+$ gcloud auth application-default login
+
+Your browser will open and prompt you to log in to your Google Cloud account. After successful authentication, your terminal will display the path where the gcloud CLI saved your credentials.
+
+Credentials saved to file: [/Users/USER/.config/gcloud/application_default_credentials.json]
+
+These credentials will be used by any library that requests Application Default Credentials (ADC).
+The GCP provider automatically uses these credentials to authenticate against the Google Cloud APIs.
+
+Tip
+
+To learn about other ways to authenticate the GCP provider, see the provider reference.
+
+Initialize the directory
+When you create a new configuration — or check out an existing configuration from version control — you need to initialize the directory with terraform init. This step downloads the providers defined in the configuration.
+
+Initialize the directory.
+
+$ terraform init
+
+Initializing the backend...
+
+Initializing provider plugins...
+- Finding hashicorp/google versions matching "6.8.0"...
+- Installing hashicorp/google v6.8.0...
+- Installed hashicorp/google v6.8.0 (signed by HashiCorp)
+
+Terraform has made some changes to the provider dependency selections recorded
+in the .terraform.lock.hcl file. Review those changes and commit them to your
+version control system if they represent changes you intended to make.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+Terraform downloads the google provider and installs it in a hidden subdirectory of your current working directory, named .terraform. The terraform init command prints the provider version Terraform installed. Terraform also creates a lock file named .terraform.lock.hcl, which specifies the exact provider versions used to ensure that every Terraform run is consistent. This also allows you to control when you want to upgrade the providers used in your configuration.
+
+Format and validate the configuration
+We recommend using consistent formatting in all of your configuration files. The terraform fmt command automatically updates configurations in the current directory for readability and consistency.
+
+Format your configuration. Terraform will print out the names of the files it modified, if any. In this case, your configuration file was already formatted correctly, so Terraform won't return any file names.
+
+$ terraform fmt
+
+You can also make sure your configuration is syntactically valid and internally consistent by using the terraform validate command.
+
+Validate your configuration. The example configuration provided above is valid, so Terraform will return a success message.
+
+$ terraform validate
+Success! The configuration is valid.
+
+Create infrastructure
+Apply the configuration now with the terraform apply command. Terraform will print output similar to what is shown below. We have truncated some of the output for brevity.
+
+$ terraform apply
+
+Terraform used the selected providers to generate the following execution plan. Resource actions
+are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # google_compute_network.vpc_network will be created
+  + resource "google_compute_network" "vpc_network" {
+      + auto_create_subnetworks                   = true
+      + delete_default_routes_on_create           = false
+      + gateway_ipv4                              = (known after apply)
+      + id                                        = (known after apply)
+      + internal_ipv6_range                       = (known after apply)
+      + mtu                                       = (known after apply)
+      + name                                      = "terraform-network"
+      + network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+      + numeric_id                                = (known after apply)
+      + project                                   = (known after apply)
+      + routing_mode                              = (known after apply)
+      + self_link                                 = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value:
+
+Terraform will indicate what infrastructure changes it plans to make, and prompt for your approval before it makes those changes.
+
+This output shows the execution plan, describing which actions Terraform will take in order to create infrastructure to match the configuration. The output format is similar to the diff format generated by tools such as Git. The output has a + next to resource "google_compute_network" "vpc_network", meaning that Terraform will create this resource. Beneath that, it shows the attributes that will be set. When the value displayed is (known after apply), it means that the value will not be known until the resource is created.
+
+Terraform will now pause and wait for approval before proceeding. If anything in the plan seems incorrect or dangerous, it is safe to abort here with no changes made to your infrastructure.
+
+In this case the plan looks acceptable, so type yes at the confirmation prompt to proceed. It may take a few minutes for Terraform to provision the network.
+
+  Enter a value: yes
+
+google_compute_network.vpc_network: Creating...
+google_compute_network.vpc_network: Still creating... [10s elapsed]
+google_compute_network.vpc_network: Still creating... [20s elapsed]
+google_compute_network.vpc_network: Still creating... [30s elapsed]
+google_compute_network.vpc_network: Creation complete after 38s [id=projects/testing-project/global/networks/terraform-network]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+You have now created infrastructure using Terraform! Visit the GCP console to see the network you provisioned. Make sure you are looking at the same region and project that you configured in the provider configuration.
+
+Inspect state
+When you applied your configuration, Terraform wrote data into a file called terraform.tfstate. Terraform stores the IDs and properties of the resources it manages in this file, so that it can update or destroy those resources going forward.
+
+The Terraform state file is the only way Terraform can track which resources it manages, and often contains sensitive information, so you must store your state file securely and distribute it only to trusted team members who need to manage your infrastructure. In production, we recommend storing your state remotely with HCP Terraform or Terraform Enterprise. Terraform also supports several other remote backends you can use to store and manage your state.
+
+Inspect the current state using terraform show.
+
+$ terraform show
+# google_compute_network.vpc_network:
+resource "google_compute_network" "vpc_network" {
+    auto_create_subnetworks                   = true
+    delete_default_routes_on_create           = false
+    description                               = null
+    enable_ula_internal_ipv6                  = false
+    gateway_ipv4                              = null
+    id                                        = "projects/test-project/global/networks/terraform-network"
+    internal_ipv6_range                       = null
+    mtu                                       = 0
+    name                                      = "terraform-network"
+    network_firewall_policy_enforcement_order = "AFTER_CLASSIC_FIREWALL"
+    numeric_id                                = "1234567890123456789"
+    project                                   = "test-project"
+    routing_mode                              = "REGIONAL"
+    self_link                                 = "https://www.googleapis.com/compute/v1/projects/test-project/global/networks/terraform-network"
+
+When Terraform created this network, it also gathered its metadata from the Google provider and recorded it in the state file. Later, you will modify your configuration to reference these values to configure other resources or outputs.
+
+Was this tutorial helpful?
+
+Yes
+
+No
+Previous
+Install
+
+Next
+Change
+
+On this page:
+
+Build infrastructure
+Prerequisites
+Set up GCP
+Write configuration
+Authenticate to Google Cloud
+Initialize the directory
+Format and validate the configuration
+Create infrastructure
+Inspect state
+Theme
+
+System
+Certifications
+System Status
+
+Cookie Manager
+Terms of Use
+Security
+Privacy
+Trademark Policy
+Trade Controls
+Accessibility
+Give Feedback
+(opens in new tab)
+Build infrastructure | Terraform | HashiCorp Developer

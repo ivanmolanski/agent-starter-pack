@@ -12,12 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Add this block to override sqlite3
-# See https://docs.trychroma.com/troubleshooting#sqlite
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-
 # mypy: disable-error-code="arg-type"
 import json
 import uuid
