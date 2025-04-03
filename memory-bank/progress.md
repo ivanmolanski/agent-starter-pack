@@ -1,29 +1,35 @@
 # Progress Tracker
 
-*   **Current Status:** Pivoted to **manual** CI/CD setup. Blocked because Terraform files are missing in `coding-crew-agent/deployment/terraform/`. Likely due to incomplete initial `agent-starter-pack create` execution.
-*   **What Works:**
-    *   Memory Bank structure initialized and updated for manual setup.
-    *   `gcloud` CLI is authenticated and project (`gen-lang-client-0926890286`) is set.
-    *   Terraform v1.11.3 manually installed to `/usr/local/bin/`.
-    *   `gh` CLI is authenticated for user `ivanmolanski`.
-*   **What's Next / To Do:**
-    1.  **Prerequisites Check:** Enable required GCP APIs (serviceusage, cloudresourcemanager, cloudbuild, secretmanager) in the CICD project (`gen-lang-client-0926890286`).
-    2.  **Connect Repository:** User manually connected the GitHub repository (`https://github.com/ivanmolanski/agent-starter-pack`) to Cloud Build. Host connection name is `git-agent-starter-pack`. (Step 2 Done).
-    3.  **Configure Terraform:** Updated `coding-crew-agent/deployment/terraform/vars/env.tfvars` with correct values. (Step 3 Done).
-    4.  **Deploy Infrastructure:** Ran `terraform init` successfully. First `terraform apply` failed (SA, Buckets, Triggers, Datasets). Imported existing SA, Buckets, and Triggers successfully.
-    5.  **Deploy Infrastructure (cont.):** Re-ran `terraform apply`. Failed again with conflicting "Already Exists" errors for Datasets. Attempted to import Datasets, but import failed ("non-existent object"). **Conclusion:** Assume datasets do not exist and proceed with apply.
-    6.  **Deploy Infrastructure (cont.):** Re-run `terraform apply` to create missing resources (Datasets, IAM bindings) and update state.
-    7.  **Commit & Push:** Pending infrastructure deployment.
-    8.  Update this progress file with the outcome.
-*   **Known Issues / Blockers:**
-    *   Conflicting Terraform errors regarding BigQuery dataset existence (`apply` says exists, `import` says non-existent). Proceeding under assumption they need creation.
-    *   Required GCP APIs enabled.
-    *   Repository connected to Cloud Build (`git-agent-starter-pack`).
-    *   Troubleshooting guide available in `/workspaces/agent-starter-pack/InstructuonsCLine.txt` and `deployment/README.md`.
-*   **Decision Log:**
-    *   [Timestamp] User clarified manual setup required, correcting previous attempts with automated command/incorrect sequence.
-    *   [Timestamp] Switched from automated `setup-cicd` to **manual setup** based on user feedback and documentation. Targeting `coding-crew-agent` project first.
-    *   [Timestamp] User corrected missed prerequisite: Terraform needs proper installation. Installed manually.
-    *   [Timestamp] Confirmed Project ID `gen-lang-client-0926890286` will be used for Staging, Prod, and CICD environments.
-    *   [Timestamp] Confirmed target repository is `https://github.com/ivanmolanski/agent-starter-pack`.
-    *   [Timestamp] Updated Memory Bank to reflect added Troubleshooting section in instructions.
+*   **Current Status:** Completed CI/CD setup for `coding-crew-agent` and local setup verification for all four agent types.
+*   **Completed Steps:**
+    *   **CI/CD Setup (Manual for `coding-crew-agent`):**
+        *   Confirmed prerequisites (gcloud auth, gh auth, Terraform install).
+        *   User manually connected GitHub repo (`ivanmolanski/agent-starter-pack`) to Cloud Build (connection: `git-agent-starter-pack`).
+        *   Configured `coding-crew-agent/deployment/terraform/vars/env.tfvars` for single project (`gen-lang-client-0926890286`).
+        *   Ran `terraform init` successfully in `coding-crew-agent/deployment/terraform/`.
+        *   Troubleshooted and resolved Terraform "Already Exists" errors for BigQuery datasets by:
+            *   Manually deleting potentially conflicting datasets (`coding_crew_agent_telemetry`, `coding_crew_agent_feedback`) using `gcloud alpha bq datasets delete`.
+            *   Modifying `coding-crew-agent/deployment/terraform/log_sinks.tf` to remove `for_each` loops and correctly reference the single project ID.
+            *   Running `terraform refresh` to sync state.
+        *   Successfully ran `terraform apply` to provision the remaining CI/CD infrastructure.
+        *   Removed committed GitHub PAT from `InstructuonsCLine.txt`.
+        *   Corrected Git history by resetting the bad commit and creating a new clean commit excluding the file with the PAT.
+        *   Successfully pushed the clean commit to `origin/main` on GitHub.
+    *   **Agent Project Setup & Verification:**
+        *   Successfully created/recreated agent projects: `coding-crew-agent`, `langgraph-agent`, `agentic-agent`, `live-api-agent`.
+        *   Successfully ran `make install` for all four agent projects to install dependencies.
+        *   Resolved `sqlite3` version conflict for `coding-crew-agent` by installing `pysqlite3-binary` and adding override code to `frontend/streamlit_app.py`.
+        *   Started `coding-crew-agent` backend (deployed to Agent Engine via `make backend`).
+        *   Started local playgrounds/servers for all agents:
+            *   `coding-crew-agent` frontend (`make playground` on `http://localhost:8501`, connects to Agent Engine backend).
+            *   `langgraph-agent` playground (`make playground` on `http://localhost:8502`).
+            *   `agentic-agent` playground (`make playground` on `http://localhost:8504`).
+            *   `live-api-agent` backend (`uvicorn` on port 8000) and frontend (`npm start` on `http://localhost:3000`) started separately after resolving port conflicts.
+    *   **Configuration:**
+        *   Created/Updated `.env` files in all four agent directories (`coding-crew-agent`, `langgraph-agent`, `agentic-agent`, `live-api-agent`) with user-provided `GOOGLE_API_KEY`, `PRIMARY_MODEL`, `EMBEDDING_MODEL`, and base URLs.
+    *   **Package Updates:**
+        *   Updated Python dependencies to latest versions using `uv pip install --upgrade` and regenerated `uv.lock` files for all four agent projects.
+*   **Next Steps:**
+    *   Local playgrounds/servers are running. User can interact with them.
+    *   CI/CD pipeline for `coding-crew-agent` is active on GitHub.
+    *   Further agent-specific setup (e.g., data ingestion for `agentic-agent`) might be needed for full functionality.
