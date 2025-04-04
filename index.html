@@ -5,61 +5,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Daily Grind - Coffee Shop</title>
+    <meta name="description" content="Welcome to The Daily Grind, a cozy coffee shop serving locally sourced beans. Find our menu, hours, and contact information.">
     <link rel="stylesheet" href="style.css">
-    <meta name="description" content="Welcome to The Daily Grind! Your local coffee shop serving the best quality coffee in a cozy atmosphere."> <!-- Added meta description -->
 </head>
 <body>
     <div class="container">
         <header>
             <h1>The Daily Grind</h1>
-            <!-- Optional: Add basic navigation if desired -->
-            <!--
-            <nav>
-                <ul>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#menu">Menu</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
-            -->
         </header>
 
-        <main> <!-- Added main element for semantic structure -->
+        <main>
             <section id="about">
                 <h2>About Us</h2>
-                <p>Welcome to The Daily Grind! We are passionate about serving the best quality coffee sourced from sustainable farms. Our cozy atmosphere is the perfect place to relax, work, or catch up with friends. Stop by for your daily dose of happiness!</p>
+                <p>Welcome to The Daily Grind! We are passionate about crafting the perfect cup of coffee using locally sourced beans. Our cozy atmosphere is the perfect place to relax, work, or catch up with friends. Stop by and taste the difference quality makes.</p>
             </section>
 
             <section id="menu">
                 <h2>Our Menu</h2>
-                <ul>
-                    <li><strong>Espresso:</strong> $3.00</li>
-                    <li><strong>Cappuccino:</strong> $4.00</li>
-                    <li><strong>Latte:</strong> $4.50</li>
-                    <li><strong>Drip Coffee:</strong> $2.50</li>
-                    <li><strong>Iced Coffee:</strong> $3.50</li>
-                    <li><strong>Croissant:</strong> $2.75</li>
-                    <li><strong>Muffin:</strong> $2.50</li>
-                </ul>
+                <dl>
+                    <dt>Espresso</dt>
+                    <dd>$3.00</dd>
+                    <dt>Cappuccino</dt>
+                    <dd>$4.00</dd>
+                    <dt>Latte</dt>
+                    <dd>$4.50</dd>
+                    <dt>Drip Coffee</dt>
+                    <dd>$2.50</dd>
+                    <dt>Iced Coffee</dt>
+                    <dd>$3.50</dd>
+                    <dt>Assorted Pastries</dt>
+                    <dd>$2.75+</dd>
+                </dl>
             </section>
 
             <section id="contact">
                 <h2>Contact Us</h2>
-                <p>Visit us at:</p>
-                <address> <!-- Use address tag for contact information -->
-                    123 Coffee Bean Lane<br>
-                    Brewtown, CA 90210<br>
-                    Phone: <a href="tel:+1-555-123-4567">(555) 123-4567</a><br> <!-- Added tel link -->
-                    Email: <a href="mailto:info@thedailygrind.coffee">info@thedailygrind.coffee</a>
-                </address>
+                 <dl>
+                    <dt>Address</dt>
+                    <dd>123 Coffee Bean Lane, Brewtown, CA 90210</dd>
+                    <dt>Phone</dt>
+                    <dd><a href="tel:+1-555-123-4567">(555) 123-4567</a></dd>
+                    <dt>Email</dt>
+                    <dd><a href="mailto:info@thedailygrind.coffee">info@thedailygrind.coffee</a></dd>
+                    <dt>Hours</dt>
+                    <dd>Mon-Fri: 6am - 6pm | Sat-Sun: 7am - 4pm</dd>
+                </dl>
             </section>
         </main>
 
         <footer>
-            <p id="copyright">&copy; 2024 The Daily Grind. All rights reserved.</p>
-            <!-- JS will update the year -->
+            <p>&copy; 2024 The Daily Grind. All rights reserved.</p>
         </footer>
-    </div> <!-- .container -->
+    </div> <!-- /container -->
 
     <script src="script.js"></script>
 </body>
