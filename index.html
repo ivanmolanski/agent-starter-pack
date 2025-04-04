@@ -4,54 +4,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Welcome to The Daily Grind, your neighborhood coffee shop. Explore our menu, learn about us, and find our contact details.">
     <title>The Daily Grind - Coffee Shop</title>
     <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Welcome to The Daily Grind! Your local coffee shop serving the best quality coffee in a cozy atmosphere."> <!-- Added meta description -->
 </head>
 <body>
-    <header>
-        <h1>The Daily Grind</h1>
-        <nav>
-            <ul>
-                <li><a href="#about">About</a></li>
-                <li><a href="#menu">Menu</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
+    <div class="container">
+        <header>
+            <h1>The Daily Grind</h1>
+            <!-- Optional: Add basic navigation if desired -->
+            <!--
+            <nav>
+                <ul>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#menu">Menu</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+            -->
+        </header>
 
-    <main class="container">
-        <section id="about">
-            <h2>About Us</h2>
-            <p>Welcome to The Daily Grind, your neighborhood haven for expertly brewed coffee, cozy vibes, and delicious pastries. We believe in starting your day right, one cup at a time.</p>
-        </section>
+        <main> <!-- Added main element for semantic structure -->
+            <section id="about">
+                <h2>About Us</h2>
+                <p>Welcome to The Daily Grind! We are passionate about serving the best quality coffee sourced from sustainable farms. Our cozy atmosphere is the perfect place to relax, work, or catch up with friends. Stop by for your daily dose of happiness!</p>
+            </section>
 
-        <section id="menu">
-            <h2>Our Menu</h2>
-            <ul>
-                <li><strong>Espresso:</strong> Rich and bold single shot.</li>
-                <li><strong>Latte:</strong> Smooth espresso with steamed milk.</li>
-                <li><strong>Cappuccino:</strong> Espresso, steamed milk, and a thick layer of foam.</li>
-                <li><strong>Drip Coffee:</strong> Freshly brewed house blend.</li>
-                <li><strong>Croissant:</strong> Flaky and buttery.</li>
-                <!-- Add more menu items as needed -->
-            </ul>
-        </section>
+            <section id="menu">
+                <h2>Our Menu</h2>
+                <ul>
+                    <li><strong>Espresso:</strong> $3.00</li>
+                    <li><strong>Cappuccino:</strong> $4.00</li>
+                    <li><strong>Latte:</strong> $4.50</li>
+                    <li><strong>Drip Coffee:</strong> $2.50</li>
+                    <li><strong>Iced Coffee:</strong> $3.50</li>
+                    <li><strong>Croissant:</strong> $2.75</li>
+                    <li><strong>Muffin:</strong> $2.50</li>
+                </ul>
+            </section>
 
-        <section id="contact">
-            <h2>Contact Us</h2>
-            <address> <!-- Using <address> tag is more semantic for contact info -->
-                <p>Visit us at: 123 Coffee Bean Lane, Brewtown, CA 90210</p>
-                <p>Call us: <a href="tel:+1-555-123-4567">(555) 123-4567</a></p> <!-- Added tel link -->
-                <p>Email: <a href="mailto:info@thedailygrind.coffee">info@thedailygrind.coffee</a></p> <!-- Added mailto link -->
-                <p>Hours: Mon-Fri 6am - 6pm, Sat-Sun 7am - 5pm</p>
-            </address>
-        </section>
-    </main>
+            <section id="contact">
+                <h2>Contact Us</h2>
+                <p>Visit us at:</p>
+                <address> <!-- Use address tag for contact information -->
+                    123 Coffee Bean Lane<br>
+                    Brewtown, CA 90210<br>
+                    Phone: <a href="tel:+1-555-123-4567">(555) 123-4567</a><br> <!-- Added tel link -->
+                    Email: <a href="mailto:info@thedailygrind.coffee">info@thedailygrind.coffee</a>
+                </address>
+            </section>
+        </main>
 
-    <footer>
-        <p>&copy; 2024 The Daily Grind. All rights reserved.</p>
-    </footer>
+        <footer>
+            <p id="copyright">&copy; 2024 The Daily Grind. All rights reserved.</p>
+            <!-- JS will update the year -->
+        </footer>
+    </div> <!-- .container -->
 
     <script src="script.js"></script>
 </body>
