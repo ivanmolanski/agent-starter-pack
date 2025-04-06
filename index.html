@@ -4,254 +4,87 @@ html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Welcome to The Daily Grind - your local cozy coffee shop.">
-    <title>The Daily Grind - Coffee Shop</title>
-    <!-- Note: Link to CSS file (needs to be created separately) -->
-    <!-- <link rel="stylesheet" href="css/style.css"> -->
-    <style>
-        /* Basic styles for structure and warm feel - ideally move to style.css */
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f1ea; /* Warm beige background */
-            color: #4a2c2a; /* Dark brown text */
-            line-height: 1.6;
-        }
+    <meta name="description" content="Welcome to The Daily Grind, your local coffee shop for the best brews and cozy atmosphere.">
+    <title>The Daily Grind - Welcome!</title>
+    <!-- Favicon links (placeholders - update paths and uncomment) -->
+    <!-- <link rel="icon" href="/assets/images/favicon.ico" sizes="any"> -->
+    <!-- <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml"> -->
+    <!-- <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png"> -->
 
-        .container {
-            max-width: 960px;
-            margin: 20px auto;
-            padding: 0 20px;
-            background-color: #ffffff; /* White content background */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-radius: 8px;
-        }
-
-        header {
-            background-color: #6b4f4b; /* Warm brown header */
-            color: #ffffff;
-            padding: 20px 0;
-            text-align: center;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
-
-        header h1 {
-            margin: 0;
-            font-family: 'Georgia', serif;
-            font-size: 2.5em;
-        }
-
-        nav {
-            background-color: #a07e78; /* Lighter warm brown for nav */
-            padding: 10px 0;
-            text-align: center;
-        }
-
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        nav ul li {
-            display: inline-block;
-            margin: 0 15px;
-        }
-
-        nav ul li a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-        }
-
-        nav ul li a:hover,
-        nav ul li a:focus {
-            background-color: #6b4f4b; /* Darker brown on hover */
-        }
-
-        main {
-            padding: 30px 0;
-        }
-
-        section {
-            margin-bottom: 40px;
-            padding: 20px;
-            border-bottom: 1px solid #eee; /* Separator */
-        }
-
-        section:last-of-type {
-            border-bottom: none;
-        }
-
-        h2 {
-            color: #6b4f4b; /* Warm brown headings */
-            font-family: 'Georgia', serif;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #a07e78;
-            padding-bottom: 5px;
-        }
-
-        .menu-item {
-            margin-bottom: 15px;
-        }
-
-        .menu-item h3 {
-            margin: 0 0 5px 0;
-            color: #4a2c2a;
-            font-size: 1.1em;
-        }
-
-        .menu-item p {
-            margin: 0;
-            font-style: italic;
-            color: #555;
-        }
-
-        .menu-item .price {
-            float: right;
-            font-weight: bold;
-            color: #6b4f4b;
-        }
-
-        address {
-            font-style: normal;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px 0;
-            margin-top: 30px;
-            font-size: 0.9em;
-            color: #777;
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
-        }
-
-        /* Basic responsive adjustment */
-        @media (max-width: 600px) {
-            nav ul li {
-                display: block;
-                margin: 10px 0;
-            }
-            header h1 {
-                font-size: 2em;
-            }
-        }
-    </style>
+    <!-- Link to CSS (Adjust path based on build output) -->
+    <link rel="stylesheet" href="/styles/global.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-link" style="position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;">Skip to main content</a>
 
-    <div class="container">
-        <header>
-            <h1>The Daily Grind</h1>
-        </header>
-
-        <nav>
+    <header id="main-header">
+        <h1>The Daily Grind</h1>
+        <nav id="main-nav" aria-label="Main Navigation">
             <ul>
+                <li><a href="#home">Home</a></li>
                 <li><a href="#about">About Us</a></li>
                 <li><a href="#menu">Menu</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </nav>
+    </header>
 
-        <main>
-            <section id="about">
-                <h2>About Us</h2>
-                <p>Welcome to The Daily Grind, your neighborhood haven for exceptional coffee and warm conversations. Founded with a passion for brewing the perfect cup, we source the finest beans and craft each drink with care.</p>
-                <p>Our cozy atmosphere is designed to be your home away from home – a place to relax, work, or catch up with friends. We believe in community, quality, and the simple joy of a great cup of coffee. Come grind with us!</p>
-            </section>
+    <main id="main-content">
+        <section id="home" aria-labelledby="welcome-heading">
+             <h2 id="welcome-heading">Your Daily Dose of Perfection</h2>
+             <p>Experience the warmth and aroma of freshly brewed coffee in a cozy, inviting atmosphere. Your perfect cup awaits!</p>
+             <!-- Maybe add a call-to-action button or image here -->
+        </section>
 
-            <section id="menu">
-                <h2>Our Menu</h2>
-                <p>Discover our selection of handcrafted beverages and delicious bites.</p>
+        <section id="about" aria-labelledby="about-heading">
+            <h2 id="about-heading">About Us</h2>
+            <p>The Daily Grind started with a simple passion: bringing people together over a great cup of coffee. We believe in quality ingredients, friendly service, and creating a space where everyone feels welcome. Learn more about our journey and our commitment to the community.</p>
+        </section>
 
-                <div class="menu-item">
-                    <h3>Espresso</h3>
-                    <span class="price">$3.00</span>
-                    <p>Rich and bold single shot.</p>
-                </div>
+        <section id="menu" aria-labelledby="menu-heading">
+            <h2 id="menu-heading">Our Menu</h2>
+            <p>From classic espressos and lattes to unique seasonal specials and delicious pastries, there's something for everyone. We source high-quality beans and fresh ingredients daily.</p>
+            <!-- Consider adding a few example menu items or a link to a full menu page/PDF -->
+            <ul>
+                <li>Espresso</li>
+                <li>Cappuccino</li>
+                <li>Latte</li>
+                <li>Drip Coffee</li>
+                <li>Cold Brew</li>
+                <li>Assorted Pastries</li>
+            </ul>
+        </section>
 
-                <div class="menu-item">
-                    <h3>Cappuccino</h3>
-                    <span class="price">$4.00</span>
-                    <p>Espresso with steamed milk foam.</p>
-                </div>
+        <section id="contact" aria-labelledby="contact-heading">
+            <h2 id="contact-heading">Get In Touch</h2>
+            <p>Visit us at [Your Address Here] or drop us a line.</p>
+            <address>
+                123 Coffee Lane<br>
+                Brewtown, CA 90210<br>
+                Phone: <a href="tel:+15551234567">(555) 123-4567</a><br>
+                Email: <a href="mailto:hello@thedailygrind.example.com">hello@thedailygrind.example.com</a>
+            </address>
+            <!-- Optionally add a contact form or map -->
+        </section>
+    </main>
 
-                <div class="menu-item">
-                    <h3>Latte</h3>
-                    <span class="price">$4.50</span>
-                    <p>Smooth espresso with steamed milk.</p>
-                </div>
+    <footer id="main-footer">
+        <!-- JavaScript will update the year -->
+        <p>&copy; <span id="current-year">2024</span> The Daily Grind. All rights reserved.</p>
+        <!-- Add social media links or other footer content if desired -->
+    </footer>
 
-                <div class="menu-item">
-                    <h3>Drip Coffee</h3>
-                    <span class="price">$2.50</span>
-                    <p>Freshly brewed house blend.</p>
-                </div>
-
-                <div class="menu-item">
-                    <h3>Croissant</h3>
-                    <span class="price">$3.50</span>
-                    <p>Flaky, buttery, and fresh from the oven.</p>
-                </div>
-
-                 <div class="menu-item">
-                    <h3>Muffin</h3>
-                    <span class="price">$3.00</span>
-                    <p>Assorted flavors, baked daily.</p>
-                </div>
-                <!-- Add more menu items as needed -->
-            </section>
-
-            <section id="contact">
-                <h2>Contact Us</h2>
-                <p>We'd love to hear from you! Visit us or get in touch.</p>
-                <address>
-                    <strong>The Daily Grind</strong><br>
-                    123 Coffee Bean Lane<br>
-                    Brewtown, CA 90210<br>
-                    Phone: <a href="tel:+15551234567">(555) 123-4567</a><br>
-                    Email: <a href="mailto:hello@thedailygrind.coffee">hello@thedailygrind.coffee</a>
-                </address>
-                <p><strong>Hours:</strong><br>
-                   Monday - Friday: 6:00 AM - 6:00 PM<br>
-                   Saturday - Sunday: 7:00 AM - 5:00 PM
-                </p>
-                <!-- Placeholder for a potential contact form -->
-                <!--
-                <form action="#" method="post">
-                    <h3>Send us a message:</h3>
-                    <p>
-                        <label for="name">Name:</label><br>
-                        <input type="text" id="name" name="name" required>
-                    </p>
-                    <p>
-                        <label for="email">Email:</label><br>
-                        <input type="email" id="email" name="email" required>
-                    </p>
-                    <p>
-                        <label for="message">Message:</label><br>
-                        <textarea id="message" name="message" rows="4" required></textarea>
-                    </p>
-                    <p>
-                        <button type="submit">Send</button>
-                    </p>
-                </form>
-                -->
-            </section>
-        </main>
-
-        <footer>
-            <p>&copy; 2024 The Daily Grind. All rights reserved.</p>
-        </footer>
-    </div>
-
-    <!-- Note: Link to JS file (needs to be created separately) -->
-    <!-- <script src="js/script.js"></script> -->
+    <!-- Link to JavaScript (Adjust path based on build output) -->
+    <!-- 'defer' ensures script executes after HTML parsing but before DOMContentLoaded -->
+    <script src="/js/main.js" defer></script>
+    <script>
+        // Simple script to update the year in the footer dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearSpan = document.getElementById('current-year');
+            if (yearSpan) {
+                yearSpan.textContent = new Date().getFullYear();
+            }
+        });
+    </script>
 </body>
 </html>
