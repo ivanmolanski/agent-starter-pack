@@ -4,77 +4,254 @@ html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Daily Grind - Your Neighborhood Coffee Shop</title>
-    <meta name="description" content="Welcome to The Daily Grind - your cozy neighborhood coffee shop. Enjoy freshly brewed coffee, delicious pastries, and a warm atmosphere.">
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Consider adding Favicon links here -->
-    <!-- <link rel="icon" href="/favicon.ico" sizes="any"> -->
-    <!-- <link rel="icon" href="/favicon.svg" type="image/svg+xml"> -->
-    <!-- <link rel="apple-touch-icon" href="/apple-touch-icon.png"> -->
+    <meta name="description" content="Welcome to The Daily Grind - your local cozy coffee shop.">
+    <title>The Daily Grind - Coffee Shop</title>
+    <!-- Note: Link to CSS file (needs to be created separately) -->
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
+    <style>
+        /* Basic styles for structure and warm feel - ideally move to style.css */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f1ea; /* Warm beige background */
+            color: #4a2c2a; /* Dark brown text */
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 20px auto;
+            padding: 0 20px;
+            background-color: #ffffff; /* White content background */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        header {
+            background-color: #6b4f4b; /* Warm brown header */
+            color: #ffffff;
+            padding: 20px 0;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-family: 'Georgia', serif;
+            font-size: 2.5em;
+        }
+
+        nav {
+            background-color: #a07e78; /* Lighter warm brown for nav */
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav ul li {
+            display: inline-block;
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav ul li a:hover,
+        nav ul li a:focus {
+            background-color: #6b4f4b; /* Darker brown on hover */
+        }
+
+        main {
+            padding: 30px 0;
+        }
+
+        section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border-bottom: 1px solid #eee; /* Separator */
+        }
+
+        section:last-of-type {
+            border-bottom: none;
+        }
+
+        h2 {
+            color: #6b4f4b; /* Warm brown headings */
+            font-family: 'Georgia', serif;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #a07e78;
+            padding-bottom: 5px;
+        }
+
+        .menu-item {
+            margin-bottom: 15px;
+        }
+
+        .menu-item h3 {
+            margin: 0 0 5px 0;
+            color: #4a2c2a;
+            font-size: 1.1em;
+        }
+
+        .menu-item p {
+            margin: 0;
+            font-style: italic;
+            color: #555;
+        }
+
+        .menu-item .price {
+            float: right;
+            font-weight: bold;
+            color: #6b4f4b;
+        }
+
+        address {
+            font-style: normal;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        /* Basic responsive adjustment */
+        @media (max-width: 600px) {
+            nav ul li {
+                display: block;
+                margin: 10px 0;
+            }
+            header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
+
+    <div class="container">
+        <header>
+            <h1>The Daily Grind</h1>
+        </header>
+
         <nav>
-            <a href="index.html" id="logo">
-                <!-- Ensure logo.png exists in the images folder -->
-                <img src="images/logo.png" alt="The Daily Grind Logo">
-            </a>
             <ul>
-                <li><a href="index.html" class="active">Home</a></li> <!-- Assuming JS adds 'active' class dynamically -->
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="menu.html">Menu</a></li>
-                <li><a href="contact.html">Contact</a></li>
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#menu">Menu</a></li>
+                <li><a href="#contact">Contact</a></li>
             </ul>
         </nav>
-    </header>
-    <main>
-        <section id="hero" aria-labelledby="hero-heading">
-            <h1 id="hero-heading">Welcome to The Daily Grind</h1>
-            <p>Your perfect escape for freshly brewed coffee, delicious pastries, and a warm, inviting atmosphere.</p>
-            <a href="menu.html" class="button">View Our Menu</a>
-        </section>
 
-        <section id="intro" aria-labelledby="intro-heading">
-            <h2 id="intro-heading">Your Cozy Corner</h2>
-            <div class="intro-container">
-                <div class="intro-item">
-                    <!-- Replace with actual relevant icons if available -->
-                    <!-- <img src="images/icon-about.svg" alt="" class="intro-icon"> -->
-                    <h3><a href="about.html">Our Story</a></h3>
-                    <p>Discover our passion for quality coffee, community connection, and creating your favorite daily ritual.</p>
-                </div>
-                <div class="intro-item">
-                    <!-- <img src="images/icon-menu.svg" alt="" class="intro-icon"> -->
-                    <h3><a href="menu.html">Delicious Menu</a></h3>
-                    <p>Explore our carefully curated selection of handcrafted espresso drinks, brewed coffee, teas, and tasty treats.</p>
-                </div>
-                <div class="intro-item">
-                    <!-- <img src="images/icon-contact.svg" alt="" class="intro-icon"> -->
-                    <h3><a href="contact.html">Visit Us</a></h3>
-                    <p>Find our location, opening hours, and get in touch. We can't wait to welcome you!</p>
-                </div>
-            </div>
-        </section>
+        <main>
+            <section id="about">
+                <h2>About Us</h2>
+                <p>Welcome to The Daily Grind, your neighborhood haven for exceptional coffee and warm conversations. Founded with a passion for brewing the perfect cup, we source the finest beans and craft each drink with care.</p>
+                <p>Our cozy atmosphere is designed to be your home away from home – a place to relax, work, or catch up with friends. We believe in community, quality, and the simple joy of a great cup of coffee. Come grind with us!</p>
+            </section>
 
-        <section id="cta" aria-label="Call to Action">
-            <h2>Stop By Today!</h2>
-            <p>Experience the warmth and aroma of The Daily Grind. Your perfect cup awaits.</p>
-            <a href="contact.html" class="button">Find Us</a>
-        </section>
+            <section id="menu">
+                <h2>Our Menu</h2>
+                <p>Discover our selection of handcrafted beverages and delicious bites.</p>
 
-    </main>
-    <footer>
-        <div class="footer-content">
-             <!-- The year will be dynamically generated by the JS if the original script's JS is used, or manually update -->
-             <p>&copy; 2024 The Daily Grind. All rights reserved.</p>
-             <div class="social-links" aria-label="Social Media Links">
-                 <!-- Add actual social media links -->
-                 <!-- Example: <a href="https://facebook.com/yourpage" aria-label="Follow us on Facebook"><img src="images/facebook-icon.svg" alt="Facebook"></a> -->
-                 <!-- Example: <a href="https://instagram.com/yourpage" aria-label="Follow us on Instagram"><img src="images/instagram-icon.svg" alt="Instagram"></a> -->
-                 <p>Follow us: [Social Media Placeholder]</p>
-             </div>
-         </div>
-    </footer>
-    <script src="js/script.js" defer></script>
+                <div class="menu-item">
+                    <h3>Espresso</h3>
+                    <span class="price">$3.00</span>
+                    <p>Rich and bold single shot.</p>
+                </div>
+
+                <div class="menu-item">
+                    <h3>Cappuccino</h3>
+                    <span class="price">$4.00</span>
+                    <p>Espresso with steamed milk foam.</p>
+                </div>
+
+                <div class="menu-item">
+                    <h3>Latte</h3>
+                    <span class="price">$4.50</span>
+                    <p>Smooth espresso with steamed milk.</p>
+                </div>
+
+                <div class="menu-item">
+                    <h3>Drip Coffee</h3>
+                    <span class="price">$2.50</span>
+                    <p>Freshly brewed house blend.</p>
+                </div>
+
+                <div class="menu-item">
+                    <h3>Croissant</h3>
+                    <span class="price">$3.50</span>
+                    <p>Flaky, buttery, and fresh from the oven.</p>
+                </div>
+
+                 <div class="menu-item">
+                    <h3>Muffin</h3>
+                    <span class="price">$3.00</span>
+                    <p>Assorted flavors, baked daily.</p>
+                </div>
+                <!-- Add more menu items as needed -->
+            </section>
+
+            <section id="contact">
+                <h2>Contact Us</h2>
+                <p>We'd love to hear from you! Visit us or get in touch.</p>
+                <address>
+                    <strong>The Daily Grind</strong><br>
+                    123 Coffee Bean Lane<br>
+                    Brewtown, CA 90210<br>
+                    Phone: <a href="tel:+15551234567">(555) 123-4567</a><br>
+                    Email: <a href="mailto:hello@thedailygrind.coffee">hello@thedailygrind.coffee</a>
+                </address>
+                <p><strong>Hours:</strong><br>
+                   Monday - Friday: 6:00 AM - 6:00 PM<br>
+                   Saturday - Sunday: 7:00 AM - 5:00 PM
+                </p>
+                <!-- Placeholder for a potential contact form -->
+                <!--
+                <form action="#" method="post">
+                    <h3>Send us a message:</h3>
+                    <p>
+                        <label for="name">Name:</label><br>
+                        <input type="text" id="name" name="name" required>
+                    </p>
+                    <p>
+                        <label for="email">Email:</label><br>
+                        <input type="email" id="email" name="email" required>
+                    </p>
+                    <p>
+                        <label for="message">Message:</label><br>
+                        <textarea id="message" name="message" rows="4" required></textarea>
+                    </p>
+                    <p>
+                        <button type="submit">Send</button>
+                    </p>
+                </form>
+                -->
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 The Daily Grind. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Note: Link to JS file (needs to be created separately) -->
+    <!-- <script src="js/script.js"></script> -->
 </body>
 </html>
