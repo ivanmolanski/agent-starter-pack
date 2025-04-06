@@ -1,64 +1,80 @@
-```html
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Daily Grind - Coffee Shop</title>
-    <meta name="description" content="Welcome to The Daily Grind, a cozy coffee shop serving locally sourced beans. Find our menu, hours, and contact information.">
-    <link rel="stylesheet" href="style.css">
+    <title>The Daily Grind - Your Neighborhood Coffee Shop</title>
+    <meta name="description" content="Welcome to The Daily Grind - your cozy neighborhood coffee shop. Enjoy freshly brewed coffee, delicious pastries, and a warm atmosphere.">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Consider adding Favicon links here -->
+    <!-- <link rel="icon" href="/favicon.ico" sizes="any"> -->
+    <!-- <link rel="icon" href="/favicon.svg" type="image/svg+xml"> -->
+    <!-- <link rel="apple-touch-icon" href="/apple-touch-icon.png"> -->
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>The Daily Grind</h1>
-        </header>
+    <header>
+        <nav>
+            <a href="index.html" id="logo">
+                <!-- Ensure logo.png exists in the images folder -->
+                <img src="images/logo.png" alt="The Daily Grind Logo">
+            </a>
+            <ul>
+                <li><a href="index.html" class="active">Home</a></li> <!-- Assuming JS adds 'active' class dynamically -->
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="menu.html">Menu</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="hero" aria-labelledby="hero-heading">
+            <h1 id="hero-heading">Welcome to The Daily Grind</h1>
+            <p>Your perfect escape for freshly brewed coffee, delicious pastries, and a warm, inviting atmosphere.</p>
+            <a href="menu.html" class="button">View Our Menu</a>
+        </section>
 
-        <main>
-            <section id="about">
-                <h2>About Us</h2>
-                <p>Welcome to The Daily Grind! We are passionate about crafting the perfect cup of coffee using locally sourced beans. Our cozy atmosphere is the perfect place to relax, work, or catch up with friends. Stop by and taste the difference quality makes.</p>
-            </section>
+        <section id="intro" aria-labelledby="intro-heading">
+            <h2 id="intro-heading">Your Cozy Corner</h2>
+            <div class="intro-container">
+                <div class="intro-item">
+                    <!-- Replace with actual relevant icons if available -->
+                    <!-- <img src="images/icon-about.svg" alt="" class="intro-icon"> -->
+                    <h3><a href="about.html">Our Story</a></h3>
+                    <p>Discover our passion for quality coffee, community connection, and creating your favorite daily ritual.</p>
+                </div>
+                <div class="intro-item">
+                    <!-- <img src="images/icon-menu.svg" alt="" class="intro-icon"> -->
+                    <h3><a href="menu.html">Delicious Menu</a></h3>
+                    <p>Explore our carefully curated selection of handcrafted espresso drinks, brewed coffee, teas, and tasty treats.</p>
+                </div>
+                <div class="intro-item">
+                    <!-- <img src="images/icon-contact.svg" alt="" class="intro-icon"> -->
+                    <h3><a href="contact.html">Visit Us</a></h3>
+                    <p>Find our location, opening hours, and get in touch. We can't wait to welcome you!</p>
+                </div>
+            </div>
+        </section>
 
-            <section id="menu">
-                <h2>Our Menu</h2>
-                <dl>
-                    <dt>Espresso</dt>
-                    <dd>$3.00</dd>
-                    <dt>Cappuccino</dt>
-                    <dd>$4.00</dd>
-                    <dt>Latte</dt>
-                    <dd>$4.50</dd>
-                    <dt>Drip Coffee</dt>
-                    <dd>$2.50</dd>
-                    <dt>Iced Coffee</dt>
-                    <dd>$3.50</dd>
-                    <dt>Assorted Pastries</dt>
-                    <dd>$2.75+</dd>
-                </dl>
-            </section>
+        <section id="cta" aria-label="Call to Action">
+            <h2>Stop By Today!</h2>
+            <p>Experience the warmth and aroma of The Daily Grind. Your perfect cup awaits.</p>
+            <a href="contact.html" class="button">Find Us</a>
+        </section>
 
-            <section id="contact">
-                <h2>Contact Us</h2>
-                 <dl>
-                    <dt>Address</dt>
-                    <dd>123 Coffee Bean Lane, Brewtown, CA 90210</dd>
-                    <dt>Phone</dt>
-                    <dd><a href="tel:+1-555-123-4567">(555) 123-4567</a></dd>
-                    <dt>Email</dt>
-                    <dd><a href="mailto:info@thedailygrind.coffee">info@thedailygrind.coffee</a></dd>
-                    <dt>Hours</dt>
-                    <dd>Mon-Fri: 6am - 6pm | Sat-Sun: 7am - 4pm</dd>
-                </dl>
-            </section>
-        </main>
-
-        <footer>
-            <p>&copy; 2024 The Daily Grind. All rights reserved.</p>
-        </footer>
-    </div> <!-- /container -->
-
-    <script src="script.js"></script>
+    </main>
+    <footer>
+        <div class="footer-content">
+             <!-- The year will be dynamically generated by the JS if the original script's JS is used, or manually update -->
+             <p>&copy; 2024 The Daily Grind. All rights reserved.</p>
+             <div class="social-links" aria-label="Social Media Links">
+                 <!-- Add actual social media links -->
+                 <!-- Example: <a href="https://facebook.com/yourpage" aria-label="Follow us on Facebook"><img src="images/facebook-icon.svg" alt="Facebook"></a> -->
+                 <!-- Example: <a href="https://instagram.com/yourpage" aria-label="Follow us on Instagram"><img src="images/instagram-icon.svg" alt="Instagram"></a> -->
+                 <p>Follow us: [Social Media Placeholder]</p>
+             </div>
+         </div>
+    </footer>
+    <script src="js/script.js" defer></script>
 </body>
 </html>
-```
