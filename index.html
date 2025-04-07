@@ -4,87 +4,143 @@ html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Welcome to The Daily Grind, your local coffee shop for the best brews and cozy atmosphere.">
-    <title>The Daily Grind - Welcome!</title>
-    <!-- Favicon links (placeholders - update paths and uncomment) -->
-    <!-- <link rel="icon" href="/assets/images/favicon.ico" sizes="any"> -->
-    <!-- <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml"> -->
-    <!-- <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png"> -->
-
-    <!-- Link to CSS (Adjust path based on build output) -->
-    <link rel="stylesheet" href="/styles/global.css">
+    <title>The Daily Grind - Your Local Coffee Haven</title>
+    <meta name="description" content="Welcome to The Daily Grind! Freshly brewed coffee, delicious pastries, and a warm, inviting atmosphere. Visit us today!">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Consider linking warm fonts like 'Lato', 'Montserrat', 'Merriweather', 'Playfair Display' based on 'warm, inviting style' -->
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet"> -->
 </head>
 <body>
-    <a href="#main-content" class="skip-link" style="position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;">Skip to main content</a>
-
-    <header id="main-header">
-        <h1>The Daily Grind</h1>
-        <nav id="main-nav" aria-label="Main Navigation">
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About Us</a></li>
-                <li><a href="#menu">Menu</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo-link" aria-label="The Daily Grind Homepage">
+                 <!-- Option: Add a text or image logo here -->
+                 <!-- <img src="img/logo.png" alt="The Daily Grind Logo" class="logo"> -->
+                 <h1 class="site-title">The Daily Grind</h1>
+            </a>
+            <nav aria-label="Main navigation">
+                <ul id="main-nav-ul">
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#menu">Menu</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+            <!-- Optional: Hamburger button for mobile -->
+            <button class="hamburger" id="hamburger-button" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-nav-ul">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
     </header>
 
-    <main id="main-content">
-        <section id="home" aria-labelledby="welcome-heading">
-             <h2 id="welcome-heading">Your Daily Dose of Perfection</h2>
-             <p>Experience the warmth and aroma of freshly brewed coffee in a cozy, inviting atmosphere. Your perfect cup awaits!</p>
-             <!-- Maybe add a call-to-action button or image here -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" aria-labelledby="hero-heading">
+             <div class="container">
+                 <h2 id="hero-heading">Welcome to The Daily Grind</h2>
+                 <p>Your perfect blend, served daily. Experience our passion for coffee in a warm, inviting atmosphere.</p>
+                 <a href="#menu" class="button">View Our Menu</a>
+                 <!-- Optional: Add an inviting image related to coffee/cafe -->
+                 <!-- <img src="img/cafe-interior.jpg" alt="Warm interior of The Daily Grind coffee shop" style="margin-top: 20px; border-radius: 8px;"> -->
+            </div>
         </section>
 
+        <!-- About Us Section -->
         <section id="about" aria-labelledby="about-heading">
-            <h2 id="about-heading">About Us</h2>
-            <p>The Daily Grind started with a simple passion: bringing people together over a great cup of coffee. We believe in quality ingredients, friendly service, and creating a space where everyone feels welcome. Learn more about our journey and our commitment to the community.</p>
+            <div class="container">
+                <h2 id="about-heading">About Us</h2>
+                <p>Founded with a love for coffee and community, The Daily Grind is your neighborhood spot to relax, recharge, and connect. We carefully source our beans and craft each cup with care.</p>
+                <p>Come say hello and become part of our story!</p>
+                 <!-- Optional: Add image of founders or shop exterior -->
+                 <!-- <img src="img/about-us.jpg" alt="The friendly team at The Daily Grind" style="margin-top: 15px; border-radius: 8px;"> -->
+            </div>
         </section>
 
+        <!-- Menu Section -->
         <section id="menu" aria-labelledby="menu-heading">
-            <h2 id="menu-heading">Our Menu</h2>
-            <p>From classic espressos and lattes to unique seasonal specials and delicious pastries, there's something for everyone. We source high-quality beans and fresh ingredients daily.</p>
-            <!-- Consider adding a few example menu items or a link to a full menu page/PDF -->
-            <ul>
-                <li>Espresso</li>
-                <li>Cappuccino</li>
-                <li>Latte</li>
-                <li>Drip Coffee</li>
-                <li>Cold Brew</li>
-                <li>Assorted Pastries</li>
-            </ul>
+            <div class="container">
+                <h2 id="menu-heading">Our Menu</h2>
+                <p>From classic espresso drinks to unique signature brews and delicious pastries, we have something for everyone.</p>
+                <!-- Example Menu Structure -->
+                <div class="menu-grid">
+                    <article class="menu-category" aria-labelledby="espresso-drinks">
+                        <h3 id="espresso-drinks">Espresso Drinks</h3>
+                        <ul>
+                            <li>Espresso</li>
+                            <li>Latte</li>
+                            <li>Cappuccino</li>
+                            <li>Americano</li>
+                            <li>Mocha</li>
+                        </ul>
+                    </article>
+                    <article class="menu-category" aria-labelledby="brewed-coffee">
+                        <h3 id="brewed-coffee">Brewed Coffee</h3>
+                        <ul>
+                            <li>Drip Coffee (Light/Medium/Dark Roast)</li>
+                            <li>Pour Over</li>
+                            <li>Cold Brew</li>
+                        </ul>
+                    </article>
+                    <article class="menu-category" aria-labelledby="pastries">
+                         <h3 id="pastries">Pastries & Snacks</h3>
+                         <ul>
+                            <li>Croissants</li>
+                            <li>Muffins</li>
+                            <li>Scones</li>
+                            <li>Cookies</li>
+                         </ul>
+                    </article>
+                    <!-- Add more categories like Teas, Specials etc. -->
+                </div>
+                 <p style="text-align: center; margin-top: 20px;">Visit us for the full menu and seasonal specials!</p>
+            </div>
         </section>
 
+        <!-- Contact Section -->
         <section id="contact" aria-labelledby="contact-heading">
-            <h2 id="contact-heading">Get In Touch</h2>
-            <p>Visit us at [Your Address Here] or drop us a line.</p>
-            <address>
-                123 Coffee Lane<br>
-                Brewtown, CA 90210<br>
-                Phone: <a href="tel:+15551234567">(555) 123-4567</a><br>
-                Email: <a href="mailto:hello@thedailygrind.example.com">hello@thedailygrind.example.com</a>
-            </address>
-            <!-- Optionally add a contact form or map -->
+            <div class="container">
+                <h2 id="contact-heading">Visit Us</h2>
+                <div class="contact-details">
+                    <div class="contact-info">
+                        <h3>Get In Touch</h3>
+                        <p><strong>Address:</strong><br> 123 Coffee Bean Lane<br> Brewville, CA 90210</p>
+                        <p><strong>Phone:</strong> <a href="tel:+15551234567">(555) 123-4567</a></p>
+                        <p><strong>Email:</strong> <a href="mailto:hello@thedailygrind.example.com">hello@thedailygrind.example.com</a></p>
+                        <p><strong>Hours:</strong><br>
+                            Mon - Fri: 6:00 AM - 6:00 PM<br>
+                            Sat - Sun: 7:00 AM - 5:00 PM
+                        </p>
+                    </div>
+                    <div class="contact-map">
+                        <h3>Find Us</h3>
+                        <!-- Placeholder for map - e.g., Google Maps embed -->
+                        <div style="background-color: #e0e0e0; height: 250px; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 4px; color: #555; font-style: italic;">
+                            <p>(Map Placeholder - Embed Google Maps Here)</p>
+                            <!-- Example Embed Code (replace with actual):
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d..." width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                             -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 
-    <footer id="main-footer">
-        <!-- JavaScript will update the year -->
-        <p>&copy; <span id="current-year">2024</span> The Daily Grind. All rights reserved.</p>
-        <!-- Add social media links or other footer content if desired -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 The Daily Grind. All Rights Reserved.</p>
+            <!-- Optional: Add social media links specific to the coffee shop -->
+             <div class="social-links">
+                <a href="#" aria-label="Link to The Daily Grind Facebook">Facebook</a> |
+                <a href="#" aria-label="Link to The Daily Grind Instagram">Instagram</a>
+                <!-- Add other social links as needed -->
+            </div>
+        </div>
     </footer>
 
-    <!-- Link to JavaScript (Adjust path based on build output) -->
-    <!-- 'defer' ensures script executes after HTML parsing but before DOMContentLoaded -->
-    <script src="/js/main.js" defer></script>
-    <script>
-        // Simple script to update the year in the footer dynamically
-        document.addEventListener('DOMContentLoaded', function() {
-            const yearSpan = document.getElementById('current-year');
-            if (yearSpan) {
-                yearSpan.textContent = new Date().getFullYear();
-            }
-        });
-    </script>
+    <!-- Link JavaScript file just before closing body tag -->
+    <script src="js/script.js"></script>
 </body>
 </html>
