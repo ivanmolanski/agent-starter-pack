@@ -1,0 +1,245 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Welcome to The Daily Grind - your local cozy coffee shop.">
+    <title>The Daily Grind - Coffee Shop</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif; /* Warm serif font */
+            line-height: 1.6;
+            background-color: #f5f0e1; /* Warm beige background */
+            color: #4a2c2a; /* Dark brown text */
+            margin: 0;
+            padding: 0;
+            font-size: 16px; /* Base font size */
+        }
+        .container {
+            max-width: 960px;
+            margin: 30px auto;
+            padding: 20px 40px;
+            background-color: #ffffff; /* White container for content */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow */
+            border-radius: 8px; /* Slightly rounded corners */
+        }
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #d3c1a5; /* Lighter brown accent line */
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #6b4f4b; /* Darker, warm brown for main heading */
+            margin-bottom: 0.5em;
+            font-size: 2.5em; /* Larger heading */
+        }
+        header p {
+            font-style: italic;
+            color: #8a6f6b; /* Medium brown for tagline */
+        }
+        h2 {
+            color: #8a6f6b; /* Medium brown for section headings */
+            border-bottom: 1px solid #e0d6c3; /* Subtle underline */
+            padding-bottom: 8px;
+            margin-top: 40px; /* More space above section headings */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        nav {
+            text-align: center;
+            margin-bottom: 40px; /* More space after nav */
+        }
+        nav a {
+            text-decoration: none;
+            color: #8a6f6b; /* Medium brown links */
+            margin: 0 15px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: color 0.3s ease, background-color 0.3s ease;
+        }
+        nav a:hover, nav a:focus {
+            color: #4a2c2a; /* Darker brown on hover */
+            background-color: #e0d6c3; /* Light brown background on hover */
+        }
+        section {
+            margin-bottom: 30px;
+        }
+        #menu ul {
+            list-style: none;
+            padding: 0;
+        }
+        #menu li {
+            margin-bottom: 15px; /* More space between items */
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #e0d6c3; /* Dashed separator */
+            overflow: hidden; /* Clear floats */
+        }
+        #menu li:last-child {
+            border-bottom: none;
+        }
+        #menu .item-name {
+            font-weight: bold;
+            color: #6b4f4b; /* Slightly darker name */
+        }
+        #menu .item-price {
+            float: right;
+            font-weight: bold;
+            color: #6b4f4b;
+        }
+        #contact p {
+            margin-bottom: 10px;
+            line-height: 1.7; /* Slightly more line spacing for contact info */
+        }
+        #contact a {
+            color: #6b4f4b; /* Consistent link color */
+            text-decoration: none;
+        }
+        #contact a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0d6c3;
+            font-size: 0.9em;
+            color: #8a6f6b;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px auto;
+                padding: 15px 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            nav a {
+                margin: 0 10px;
+                padding: 5px;
+            }
+            #menu .item-price {
+                float: none;
+                display: block; /* Stack price below name on small screens */
+                margin-top: 5px;
+                font-weight: normal;
+                color: #8a6f6b;
+            }
+        }
+         @media (max-width: 480px) {
+            body {
+                font-size: 15px;
+            }
+            .container {
+                margin: 10px auto;
+                padding: 10px 15px;
+                border-radius: 0; /* No radius on small screens */
+            }
+            nav {
+                margin-bottom: 30px;
+            }
+            nav a {
+                display: block; /* Stack nav links */
+                margin: 5px 0;
+            }
+         }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>The Daily Grind</h1>
+            <p>Your perfect blend, every day.</p>
+        </header>
+
+        <nav>
+            <a href="#about">About Us</a>
+            <a href="#menu">Menu</a>
+            <a href="#contact">Contact</a>
+        </nav>
+
+        <main>
+            <section id="about">
+                <h2>About Us</h2>
+                <p>Welcome to The Daily Grind! We are a cozy neighborhood coffee shop passionate about serving high-quality, ethically sourced coffee and creating a warm, inviting space for our community. Established with love, our mission is to provide the perfect cup to kickstart your day or offer a relaxing haven to unwind.</p>
+                <p>We partner with local roasters to ensure the freshest beans make it into your cup. Step inside, breathe in the aroma of freshly brewed coffee, and feel at home. We look forward to serving you!</p>
+            </section>
+
+            <section id="menu">
+                <h2>Menu</h2>
+                <ul>
+                    <li>
+                        <span class="item-name">Espresso</span>
+                        <span class="item-price">$2.75</span>
+                    </li>
+                    <li>
+                        <span class="item-name">Americano</span>
+                        <span class="item-price">$3.25</span>
+                    </li>
+                    <li>
+                        <span class="item-name">Cappuccino</span>
+                        <span class="item-price">$4.00</span>
+                    </li>
+                    <li>
+                        <span class="item-name">Latte (Hot/Iced)</span>
+                        <span class="item-price">$4.25</span>
+                    </li>
+                     <li>
+                        <span class="item-name">Flavored Latte (Vanilla, Caramel, Hazelnut)</span>
+                        <span class="item-price">$4.75</span>
+                    </li>
+                    <li>
+                        <span class="item-name">Mocha</span>
+                        <span class="item-price">$4.75</span>
+                    </li>
+                    <li>
+                        <span class="item-name">Freshly Brewed Drip Coffee</span>
+                        <span class="item-price">$3.00</span>
+                    </li>
+                     <li>
+                        <span class="item-name">Cold Brew</span>
+                        <span class="item-price">$4.50</span>
+                    </li>
+                    <li>
+                        <span class="item-name">Hot Tea (Assorted)</span>
+                        <span class="item-price">$2.50</span>
+                    </li>
+                    <li>
+                        <span class="item-name">Croissants, Muffins, Scones</span>
+                        <span class="item-price">$3.00 - $4.50</span>
+                    </li>
+                </ul>
+            </section>
+
+            <section id="contact">
+                <h2>Contact Us</h2>
+                <p>We'd love to see you! Visit us during our opening hours or get in touch:</p>
+                <p>
+                    <strong>Address:</strong><br>
+                    123 Coffee Bean Lane,<br>
+                    Brewtown, CA 90210
+                </p>
+                <p>
+                    <strong>Phone:</strong> <a href="tel:+1-555-123-4567">(555) 123-4567</a><br>
+                    <strong>Email:</strong> <a href="mailto:info@thedailygrind.example.com">info@thedailygrind.example.com</a>
+                </p>
+                <p>
+                   <strong>Hours:</strong><br>
+                   Monday - Friday: 6:00 AM - 6:00 PM<br>
+                   Saturday - Sunday: 7:00 AM - 5:00 PM
+                </p>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 The Daily Grind. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
